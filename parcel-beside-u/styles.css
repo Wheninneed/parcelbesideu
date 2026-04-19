@@ -52,7 +52,7 @@ header {
   text-decoration: none;
   font-weight: 700;
   color: var(--text-main);
-  font-size: 18px;
+  font-size: 24px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -226,6 +226,10 @@ p, ul, ol {
 }
 
 @media (max-width: 768px) {
+  .logo {
+    font-size: 18px;
+  }
+  
   .hamburger {
     display: block;
   }
