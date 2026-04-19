@@ -8,7 +8,7 @@
   --bg-main: #ffffff;
   --bg-hover: rgba(55, 53, 47, 0.08);
   --divider: rgba(55, 53, 47, 0.16);
-  --max-width: 900px;
+  --max-width: 1200px;
   
   /* Link Color */
   --link-color: inherit;
@@ -25,8 +25,8 @@ body {
   font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   color: var(--text-main);
   background-color: var(--bg-main);
-  line-height: 1.5;
-  font-size: 16px;
+  line-height: 1.6;
+  font-size: 19px;
   letter-spacing: -0.01em;
 }
 
@@ -52,23 +52,23 @@ header {
   text-decoration: none;
   font-weight: 700;
   color: var(--text-main);
-  font-size: 24px;
+  font-size: 32px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .nav-links {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   list-style: none;
 }
 
 .nav-links a {
   text-decoration: none;
-  color: var(--text-gray);
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 600;
   transition: color 0.2s;
 }
 
@@ -89,21 +89,21 @@ header {
 main {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 96px 24px 64px 24px; /* Notion pages have generous top padding */
+  padding: 80px 24px 64px 24px;
 }
 
 /* Notion block styles */
 .page-title {
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 700;
-  margin-bottom: 8px;
-  line-height: 1.2;
+  margin-bottom: 12px;
+  line-height: 1.25;
 }
 
 .page-description {
-  font-size: 16px;
+  font-size: 20px;
   color: var(--text-main);
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   white-space: pre-wrap;
 }
 
@@ -111,13 +111,13 @@ hr {
   border: 0;
   height: 1px;
   background: var(--divider);
-  margin: 24px 0;
+  margin: 32px 0;
 }
 
-h1 { font-size: 32px; margin: 32px 0 16px 0; font-weight: 700; }
-h2 { font-size: 24px; margin: 28px 0 12px 0; font-weight: 600; }
-h3 { font-size: 20px; margin: 24px 0 8px 0; font-weight: 600; }
-h4 { font-size: 18px; margin: 16px 0 4px 0; font-weight: 500; }
+h1 { font-size: 38px; margin: 40px 0 20px 0; font-weight: 700; }
+h2 { font-size: 30px; margin: 36px 0 16px 0; font-weight: 600; }
+h3 { font-size: 26px; margin: 32px 0 12px 0; font-weight: 600; }
+h4 { font-size: 22px; margin: 24px 0 8px 0; font-weight: 500; }
 
 p, ul, ol {
   margin-bottom: 12px;
@@ -173,19 +173,20 @@ p, ul, ol {
 }
 
 .bookmark-title {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .bookmark-desc {
-  font-size: 12px;
+  font-size: 15px;
   color: var(--text-gray);
-  margin-bottom: 8px;
-  line-height: 1.4;
+  margin-bottom: 12px;
+  line-height: 1.5;
+  white-space: normal;
 }
 
 .bookmark-url {
@@ -226,9 +227,17 @@ p, ul, ol {
 }
 
 @media (max-width: 768px) {
-  .logo {
-    font-size: 18px;
-  }
+  body { font-size: 16px; }
+  .logo { font-size: 20px; }
+  .page-title { font-size: 32px; }
+  .page-description { font-size: 16px; }
+  h1 { font-size: 28px; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 20px; }
+  h4 { font-size: 18px; }
+  .bookmark-title { font-size: 16px; }
+  .bookmark-desc { font-size: 13px; }
+  
   
   .hamburger {
     display: block;
