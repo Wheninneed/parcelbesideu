@@ -68,16 +68,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     loginBtn.addEventListener('click', async () => {
       const email = document.getElementById('admin-email').value;
       const password = document.getElementById('admin-password').value;
+      const errorMsg = document.getElementById('login-error');
+      
+      errorMsg.style.color = '#eab308';
+      errorMsg.innerText = '로그인 중입니다. 잠시만 기다려주세요...';
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
 
-      if (error) {
-        document.getElementById('login-error').innerText = error.message;
-      } else {
-        showDashboard();
+        if (error) {
+          errorMsg.style.color = 'red';
+          errorMsg.innerText = '로그인 실패: ' + error.message;
+        } else {
+          errorMsg.innerText = '';
+          showDashboard();
+        }
+      } catch (err) {
+        errorMsg.style.color = 'red';
+        errorMsg.innerText = '시스템 오류: ' + (err.message || '인터넷 연결을 확인하세요.');
       }
     });
 
