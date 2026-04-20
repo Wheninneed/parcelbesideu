@@ -110,6 +110,57 @@
 
   </main>
 
+  <script>
+    window.handleAdminLogin = async function(e) {
+      if (e) e.preventDefault();
+      
+      const email = document.getElementById('admin-email').value;
+      const password = document.getElementById('admin-password').value;
+      const errorMsg = document.getElementById('login-error');
+      
+      const loginSection = document.getElementById('login-section');
+      const dashboardSection = document.getElementById('dashboard-section');
+
+      if (!window.supabase) {
+        errorMsg.style.color = 'red';
+        errorMsg.innerText = '인터넷 접속 문제로 라이브러리가 로드되지 않았습니다. 잠시 후 다시 시도해주세요.';
+        return false;
+      }
+      
+      errorMsg.style.color = '#eab308';
+      errorMsg.innerText = '로그인 중입니다. 잠시만 기다려주세요...';
+
+      try {
+        const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
+        window.tempSb = window.tempSb || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const { data, error } = await window.tempSb.auth.signInWithPassword({ email: email, password: password });
+
+        if (error) {
+          errorMsg.style.color = 'red';
+          errorMsg.innerText = '로그인 실패: ' + error.message;
+        } else {
+          errorMsg.innerText = '로그인 성공!';
+          loginSection.classList.add('hidden');
+          dashboardSection.classList.remove('hidden');
+          
+          // Fetch settings immediately
+          const { data: sData } = await window.tempSb.from('site_settings').select('*');
+          if (sData) {
+            sData.forEach(item => {
+              if (item.id === 'business_hours') document.getElementById('edit-hours').value = item.content;
+              if (item.id === 'payment_method') document.getElementById('edit-payment').value = item.content;
+            });
+          }
+        }
+      } catch (err) {
+        errorMsg.style.color = 'red';
+        errorMsg.innerText = '오류 발생: ' + err.message;
+      }
+      return false;
+    };
+  </script>
   <script src="app.js?v=final_fix"></script>
 </body>
 </html>
