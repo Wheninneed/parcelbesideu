@@ -5,9 +5,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Initialize Supabase only if keys are correctly replaced and look like a real URL
 let supabase = null;
-if (window.supabase && SUPABASE_URL.startsWith('http')) {
+if (window.supabase && SUPABASE_URL && SUPABASE_URL.trim().startsWith('http')) {
   try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabase = window.supabase.createClient(SUPABASE_URL.trim(), SUPABASE_ANON_KEY.trim());
   } catch (e) {
     console.error("Supabase init error:", e);
   }
@@ -56,17 +56,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dashboardSection = document.getElementById('dashboard-section');
 
   if (loginSection && dashboardSection) {
-    if (!supabase) {
-      document.getElementById('login-error').innerText = 'System Error: Supabase keys not configured in app.js!';
-      return;
-    }
-
     // Login Handler
     const loginBtn = document.getElementById('login-btn');
     loginBtn.addEventListener('click', async () => {
       const email = document.getElementById('admin-email').value;
       const password = document.getElementById('admin-password').value;
       const errorMsg = document.getElementById('login-error');
+      
+      if (!supabase) {
+        errorMsg.style.color = 'red';
+        errorMsg.innerText = '시스템 오류: Supabase 주소나 Key가 잘못되었거나 로딩되지 않았습니다. app.js 파일을 확인하세요.';
+        alert('시스템 오류: Supabase 설정이 잘못되었습니다!');
+        return;
+      }
       
       errorMsg.style.color = '#eab308';
       errorMsg.innerText = '로그인 중입니다. 잠시만 기다려주세요...';
