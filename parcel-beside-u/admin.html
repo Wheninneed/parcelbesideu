@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Parcel Beside U</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .admin-container {
+      background: var(--bg-main);
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      padding: 32px;
+      margin-top: 24px;
+    }
+    .input-group {
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    textarea, input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--divider);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 16px;
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    button.btn {
+      background: #111827;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.btn:hover {
+      background: #1f2937;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  
+  <header>
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        📦 Parcel beside U (Admin)
+      </a>
+      <button class="hamburger">☰</button>
+      <nav class="nav-links">
+        <a href="index.html">Back to Site</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Admin Dashboard (새로고침 완료!)</h1>
+    
+    <!-- Login Section -->
+    <div id="login-section" class="admin-container">
+      <h2>Please Login</h2>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="admin-email" placeholder="admin@example.com" />
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="admin-password" placeholder="••••••••" />
+      </div>
+      <button class="btn" id="login-btn">Login</button>
+      <p id="login-error" style="color: red; margin-top: 12px;"></p>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="admin-container hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2>Edit Site Information</h2>
+        <button class="btn" id="logout-btn" style="background: var(--divider); color: var(--text-main);">Logout</button>
+      </div>
+      
+      <div class="input-group">
+        <label>⏰ Business Hours (Use bullet points or plain text)</label>
+        <textarea id="edit-hours" placeholder="Loading..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>💳 Payment Method</label>
+        <textarea id="edit-payment" placeholder="Loading..."></textarea>
+      </div>
+
+      <button class="btn" id="save-btn">Save Changes</button>
+      <p id="save-status" style="color: green; margin-top: 12px; font-weight: bold;"></p>
+    </div>
+
+  </main>
+
+  <script src="app.js?v=final_fix"></script>
+</body>
+</html>
