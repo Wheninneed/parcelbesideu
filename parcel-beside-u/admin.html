@@ -73,16 +73,18 @@
     <!-- Login Section -->
     <div id="login-section" class="admin-container">
       <h2>Please Login</h2>
-      <div class="input-group">
-        <label>Email</label>
-        <input type="email" id="admin-email" placeholder="admin@example.com" />
-      </div>
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="admin-password" placeholder="••••••••" />
-      </div>
-      <button class="btn" id="login-btn">Login</button>
-      <p id="login-error" style="color: red; margin-top: 12px;"></p>
+      <form id="login-form">
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="admin-email" placeholder="admin@example.com" required />
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="admin-password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn" id="login-btn">Login</button>
+      </form>
+      <p id="login-error" style="color: red; margin-top: 12px; font-weight: bold;"></p>
     </div>
 
     <!-- Dashboard Section -->

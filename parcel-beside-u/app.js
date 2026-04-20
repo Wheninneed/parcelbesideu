@@ -56,9 +56,13 @@ if (window.supabase && SUPABASE_URL && SUPABASE_URL.trim().startsWith('http')) {
   const dashboardSection = document.getElementById('dashboard-section');
 
   if (loginSection && dashboardSection) {
-    // Login Handler
-    const loginBtn = document.getElementById('login-btn');
-    loginBtn.addEventListener('click', async () => {
+    // Login Form Handler (Supports Enter Key)
+    const loginForm = document.getElementById('login-form');
+    // If using the older version of admin.html without the form, fallback to button click
+    const formOrBtn = loginForm || document.getElementById('login-btn');
+    
+    formOrBtn.addEventListener(loginForm ? 'submit' : 'click', async (e) => {
+      if (e) e.preventDefault();
       const email = document.getElementById('admin-email').value;
       const password = document.getElementById('admin-password').value;
       const errorMsg = document.getElementById('login-error');
