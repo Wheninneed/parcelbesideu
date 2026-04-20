@@ -3,10 +3,14 @@
 const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
 
-// Initialize Supabase only if keys are present
+// Initialize Supabase only if keys are correctly replaced and look like a real URL
 let supabase = null;
-if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && typeof supabaseClient !== 'undefined' || window.supabase) {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (window.supabase && SUPABASE_URL.startsWith('http')) {
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    console.error("Supabase init error:", e);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
