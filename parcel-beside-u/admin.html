@@ -73,7 +73,7 @@
     <!-- Login Section -->
     <div id="login-section" class="admin-container">
       <h2>Please Login</h2>
-      <form id="login-form">
+      <form id="login-form" onsubmit="return handleAdminLogin(event)">
         <div class="input-group">
           <label>Email</label>
           <input type="email" id="admin-email" placeholder="admin@example.com" required />

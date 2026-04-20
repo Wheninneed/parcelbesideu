@@ -3,15 +3,15 @@
 const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
 
-// Initialize Supabase only if keys are correctly replaced and look like a real URL
-let supabase = null;
-if (window.supabase && SUPABASE_URL && SUPABASE_URL.trim().startsWith('http')) {
-  try {
-    supabase = window.supabase.createClient(SUPABASE_URL.trim(), SUPABASE_ANON_KEY.trim());
-  } catch (e) {
-    console.error("Supabase init error:", e);
-  }
+// We don't globally run createClient, to prevent crash on page load.
+// It will be initialized exactly when needed.
+function getSupabase() {
+  if (!window.supabase) return null;
+  if (!SUPABASE_URL || !SUPABASE_URL.trim().startsWith('http')) return null;
+  return window.supabase.createClient(SUPABASE_URL.trim(), SUPABASE_ANON_KEY.trim());
 }
+
+let supabase = getSupabase();
 
 (async () => {
   // Mobile Menu Logic
@@ -56,22 +56,22 @@ if (window.supabase && SUPABASE_URL && SUPABASE_URL.trim().startsWith('http')) {
   const dashboardSection = document.getElementById('dashboard-section');
 
   if (loginSection && dashboardSection) {
-    // Login Form Handler (Supports Enter Key)
-    const loginForm = document.getElementById('login-form');
-    // If using the older version of admin.html without the form, fallback to button click
-    const formOrBtn = loginForm || document.getElementById('login-btn');
-    
-    formOrBtn.addEventListener(loginForm ? 'submit' : 'click', async (e) => {
+    // Global Login Handler
+    window.handleAdminLogin = async function(e) {
       if (e) e.preventDefault();
+      
       const email = document.getElementById('admin-email').value;
       const password = document.getElementById('admin-password').value;
       const errorMsg = document.getElementById('login-error');
       
+      // Attempt to load Supabase if it wasn't ready previously
+      if (!supabase) supabase = getSupabase();
+
       if (!supabase) {
         errorMsg.style.color = 'red';
-        errorMsg.innerText = '시스템 오류: Supabase 주소나 Key가 잘못되었거나 로딩되지 않았습니다. app.js 파일을 확인하세요.';
+        errorMsg.innerText = '시스템 오류: Supabase 주소나 Key가 잘못되었거나 로딩되지 않았습니다. 인터넷 상태나 app.js 파일을 확인하세요.';
         alert('시스템 오류: Supabase 설정이 잘못되었습니다!');
-        return;
+        return false;
       }
       
       errorMsg.style.color = '#eab308';
@@ -94,11 +94,12 @@ if (window.supabase && SUPABASE_URL && SUPABASE_URL.trim().startsWith('http')) {
         errorMsg.style.color = 'red';
         errorMsg.innerText = '시스템 오류: ' + (err.message || '인터넷 연결을 확인하세요.');
       }
-    });
+      return false;
+    };
 
     // Logout Handler
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      if (supabase) await supabase.auth.signOut();
       loginSection.classList.remove('hidden');
       dashboardSection.classList.add('hidden');
     });
