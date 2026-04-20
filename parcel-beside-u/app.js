@@ -13,7 +13,7 @@ if (window.supabase && SUPABASE_URL && SUPABASE_URL.trim().startsWith('http')) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+(async () => {
   // Mobile Menu Logic
   const hamburger = document.querySelector('.hamburger');
   const navLinks = document.querySelector('.nav-links');
@@ -101,9 +101,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check if already logged in (Safe Check)
     try {
-      const { data, error } = await supabase.auth.getSession();
-      if (data && data.session) {
-        showDashboard();
+      if (supabase) {
+        const { data, error } = await supabase.auth.getSession();
+        if (data && data.session) {
+          showDashboard();
+        }
       }
     } catch (err) {
       console.error("Session check failed:", err);
@@ -143,4 +145,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   }
-});
+})();
