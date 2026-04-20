@@ -57,12 +57,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Check if already logged in
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      showDashboard();
-    }
-
     // Login Handler
     const loginBtn = document.getElementById('login-btn');
     loginBtn.addEventListener('click', async () => {
@@ -98,6 +92,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       loginSection.classList.remove('hidden');
       dashboardSection.classList.add('hidden');
     });
+
+    // Check if already logged in (Safe Check)
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (data && data.session) {
+        showDashboard();
+      }
+    } catch (err) {
+      console.error("Session check failed:", err);
+    }
 
     // Save Settings
     document.getElementById('save-btn').addEventListener('click', async () => {
