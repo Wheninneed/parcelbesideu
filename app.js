@@ -114,11 +114,43 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
             var upcoming = parsed.holidays.filter(function(h) { return h >= todayStr; }).sort();
             if (upcoming.length > 0) {
-              var datesHtml = upcoming.map(function(d) { return '<b>' + d + '</b>'; }).join(', ');
+              // Group consecutive dates into ranges
+              var ranges = [];
+              var rangeStart = upcoming[0];
+              var rangeEnd = upcoming[0];
+              
+              for (var ri = 1; ri < upcoming.length; ri++) {
+                var prev = new Date(rangeEnd);
+                var curr = new Date(upcoming[ri]);
+                var diff = (curr - prev) / (1000 * 60 * 60 * 24);
+                if (diff === 1) {
+                  rangeEnd = upcoming[ri];
+                } else {
+                  ranges.push({ start: rangeStart, end: rangeEnd });
+                  rangeStart = upcoming[ri];
+                  rangeEnd = upcoming[ri];
+                }
+              }
+              ranges.push({ start: rangeStart, end: rangeEnd });
+
+              // Format as M/D without year
+              function fmtDate(dateStr) {
+                var parts = dateStr.split('-');
+                return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+              }
+
+              var rangeTexts = ranges.map(function(r) {
+                if (r.start === r.end) {
+                  return '<b>' + fmtDate(r.start) + '</b>';
+                } else {
+                  return '<b>' + fmtDate(r.start) + ' ~ ' + fmtDate(r.end) + '</b>';
+                }
+              });
+
               holidayAlertContainer.innerHTML =
-                '<div style="background-color: #fef2f2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #f87171;">'
-                + '<h4 style="margin: 0 0 8px 0; font-size: 18px;">⚠️ Notice: Temporary Closure</h4>'
-                + 'We will be closed on: <span style="font-size: 16px;">' + datesHtml + '</span>'
+                '<div style="background-color: #fef2f2; color: #991b1b; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #f87171; font-size: 18px;">'
+                + '<h4 style="margin: 0 0 8px 0; font-size: 20px;">⚠️ Notice: Temporary Closure</h4>'
+                + 'We will be closed on: <span>' + rangeTexts.join(', ') + '</span>'
                 + '</div>';
             }
           }

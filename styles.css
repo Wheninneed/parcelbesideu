@@ -208,6 +208,26 @@ p, ul, ol {
   border-radius: 3px;
 }
 
+/* Info Section (Business Hours, Payment, Direction) */
+.info-section h3 {
+  font-size: 28px;
+  margin: 36px 0 16px 0;
+}
+.info-section ul {
+  font-size: 20px;
+  line-height: 2;
+}
+.info-section ul li {
+  padding: 4px 0;
+}
+.info-section p {
+  font-size: 20px;
+  line-height: 1.8;
+}
+.info-section .page-link {
+  font-size: 20px;
+}
+
 .footer-nav {
   margin-top: 48px;
   padding-top: 24px;
