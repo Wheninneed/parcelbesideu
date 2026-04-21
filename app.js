@@ -1,153 +1,145 @@
-// --- SUPABASE CONFIGURATION ---
-// IMPORTANT: Please replace these variables with your actual Supabase project URL and ANON KEY
+// =============================================
+// app.js — PUBLIC PAGES ONLY (index.html, about.html)
+// Admin page is fully self-contained in admin.html
+// =============================================
 const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
 
-// We don't globally run createClient, to prevent crash on page load.
-// It will be initialized exactly when needed.
-function getSupabase() {
-  if (!window.supabase) return null;
-  if (!SUPABASE_URL || !SUPABASE_URL.trim().startsWith('http')) return null;
-  return window.supabase.createClient(SUPABASE_URL.trim(), SUPABASE_ANON_KEY.trim());
-}
-
-let supabase = getSupabase();
-
-(async () => {
-  // Mobile Menu Logic
-  const hamburger = document.querySelector('.hamburger');
-  const navLinks = document.querySelector('.nav-links');
+(function() {
+  // Mobile Menu
+  var hamburger = document.querySelector('.hamburger');
+  var navLinks = document.querySelector('.nav-links');
   if (hamburger && navLinks) {
-    hamburger.addEventListener('click', () => {
+    hamburger.addEventListener('click', function() {
       navLinks.classList.toggle('active');
     });
   }
 
-  // --- PUBLIC DISPLAY LOGIC ---
-  if (supabase) {
-    const businessHoursDisplay = document.getElementById('business-hours-content');
-    const paymentMethodDisplay = document.getElementById('payment-method-content');
+  // --- PUBLIC DATA DISPLAY ---
+  var businessHoursDisplay = document.getElementById('business-hours-content');
+  var paymentMethodDisplay = document.getElementById('payment-method-content');
+  var holidayAlertContainer = document.getElementById('holiday-alert-container');
 
-    // Only fetch if these elements exist on the current page (index.html or about.html)
-    if (businessHoursDisplay || paymentMethodDisplay) {
-      try {
-        const { data, error } = await supabase
-          .from('site_settings')
-          .select('*');
+  if (!businessHoursDisplay && !paymentMethodDisplay) return;
 
-        if (data && !error) {
-          data.forEach(item => {
-            if (item.id === 'business_hours' && businessHoursDisplay) {
-              businessHoursDisplay.innerHTML = item.content;
-            }
-            if (item.id === 'payment_method' && paymentMethodDisplay) {
-              paymentMethodDisplay.innerHTML = item.content;
-            }
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching settings:', err);
-      }
-    }
+  if (!window.supabase) {
+    console.error('Supabase CDN not loaded');
+    if (paymentMethodDisplay) paymentMethodDisplay.textContent = 'Cash | Venmo | Paypal | Credit Card | Wire transfer';
+    return;
   }
 
-  // --- ADMIN PAGE LOGIC ---
-  const loginSection = document.getElementById('login-section');
-  const dashboardSection = document.getElementById('dashboard-section');
-
-  if (loginSection && dashboardSection) {
-    // Global Login Handler
-    window.handleAdminLogin = async function(e) {
-      if (e) e.preventDefault();
-      
-      const email = document.getElementById('admin-email').value;
-      const password = document.getElementById('admin-password').value;
-      const errorMsg = document.getElementById('login-error');
-      
-      // Attempt to load Supabase if it wasn't ready previously
-      if (!supabase) supabase = getSupabase();
-
-      if (!supabase) {
-        errorMsg.style.color = 'red';
-        errorMsg.innerText = '시스템 오류: Supabase 주소나 Key가 잘못되었거나 로딩되지 않았습니다. 인터넷 상태나 app.js 파일을 확인하세요.';
-        alert('시스템 오류: Supabase 설정이 잘못되었습니다!');
-        return false;
-      }
-      
-      errorMsg.style.color = '#eab308';
-      errorMsg.innerText = '로그인 중입니다. 잠시만 기다려주세요...';
-
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email,
-          password: password
-        });
-
-        if (error) {
-          errorMsg.style.color = 'red';
-          errorMsg.innerText = '로그인 실패: ' + error.message;
-        } else {
-          errorMsg.innerText = '';
-          showDashboard();
-        }
-      } catch (err) {
-        errorMsg.style.color = 'red';
-        errorMsg.innerText = '시스템 오류: ' + (err.message || '인터넷 연결을 확인하세요.');
-      }
-      return false;
-    };
-
-    // Logout Handler
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
-      if (supabase) await supabase.auth.signOut();
-      loginSection.classList.remove('hidden');
-      dashboardSection.classList.add('hidden');
-    });
-
-    // Check if already logged in (Safe Check)
-    try {
-      if (supabase) {
-        const { data, error } = await supabase.auth.getSession();
-        if (data && data.session) {
-          showDashboard();
-        }
-      }
-    } catch (err) {
-      console.error("Session check failed:", err);
-    }
-
-    // Save Settings
-    document.getElementById('save-btn').addEventListener('click', async () => {
-      const statusText = document.getElementById('save-status');
-      statusText.innerText = 'Saving...';
-
-      const hoursHtml = document.getElementById('edit-hours').value;
-      const paymentHtml = document.getElementById('edit-payment').value;
-
-      const { error: err1 } = await supabase.from('site_settings').update({ content: hoursHtml }).eq('id', 'business_hours');
-      const { error: err2 } = await supabase.from('site_settings').update({ content: paymentHtml }).eq('id', 'payment_method');
-
-      if (err1 || err2) {
-        statusText.style.color = 'red';
-        statusText.innerText = 'Error saving changes: ' + (err1?.message || err2?.message);
-      } else {
-        statusText.style.color = 'green';
-        statusText.innerText = 'Changes saved successfully! Refresh the live site to see them.';
-      }
-    });
-
-    async function showDashboard() {
-      loginSection.classList.add('hidden');
-      dashboardSection.classList.remove('hidden');
-
-      // Fetch current values
-      const { data, error } = await supabase.from('site_settings').select('*');
-      if (data) {
-        data.forEach(item => {
-          if (item.id === 'business_hours') document.getElementById('edit-hours').value = item.content;
-          if (item.id === 'payment_method') document.getElementById('edit-payment').value = item.content;
-        });
-      }
-    }
+  var client;
+  try {
+    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch(e) {
+    console.error('Supabase client creation failed:', e);
+    return;
   }
+
+  client.from('site_settings').select('*').then(function(result) {
+    var data = result.data;
+    var error = result.error;
+
+    if (error) {
+      console.error('Fetch error:', error.message);
+      if (businessHoursDisplay) {
+        businessHoursDisplay.innerHTML = '<li>MON - THU 13:00 - 19:00</li><li>FRIDAY 12:00 - 18:00</li><li>SAT - SUN CLOSED</li>';
+      }
+      if (paymentMethodDisplay) {
+        paymentMethodDisplay.textContent = 'Cash | Venmo | Paypal | Credit Card | Wire transfer(Korean bank)';
+      }
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn('No data in site_settings');
+      if (businessHoursDisplay) {
+        businessHoursDisplay.innerHTML = '<li>MON - THU 13:00 - 19:00</li><li>FRIDAY 12:00 - 18:00</li><li>SAT - SUN CLOSED</li>';
+      }
+      if (paymentMethodDisplay) {
+        paymentMethodDisplay.textContent = 'Cash | Venmo | Paypal | Credit Card | Wire transfer(Korean bank)';
+      }
+      return;
+    }
+
+    data.forEach(function(item) {
+      // === BUSINESS HOURS ===
+      if (item.id === 'business_hours' && businessHoursDisplay) {
+        try {
+          var parsed = JSON.parse(item.content);
+          var dayIds = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+          var dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+          var html = '';
+          var currentGroup = [];
+          var prevStr = null;
+
+          for (var i = 0; i < dayIds.length; i++) {
+            var info = parsed.regular[dayIds[i]] || { closed: true };
+            var str = info.closed ? 'CLOSED' : (info.open + ' - ' + info.close);
+
+            if (str === prevStr) {
+              currentGroup.push(dayLabels[i]);
+            } else {
+              if (currentGroup.length > 0) {
+                var title = currentGroup.length > 1
+                  ? currentGroup[0] + ' - ' + currentGroup[currentGroup.length - 1]
+                  : currentGroup[0];
+                if (title === 'FRI') title = 'FRIDAY';
+                if (title === 'SAT') title = 'SATURDAY';
+                if (title === 'SUN') title = 'SUNDAY';
+                html += '<li>' + title + ' ' + prevStr + '</li>';
+              }
+              currentGroup = [dayLabels[i]];
+              prevStr = str;
+            }
+          }
+          if (currentGroup.length > 0) {
+            var lastTitle = currentGroup.length > 1
+              ? currentGroup[0] + ' - ' + currentGroup[currentGroup.length - 1]
+              : currentGroup[0];
+            if (lastTitle === 'FRI') lastTitle = 'FRIDAY';
+            if (lastTitle === 'SAT') lastTitle = 'SATURDAY';
+            if (lastTitle === 'SUN') lastTitle = 'SUNDAY';
+            html += '<li>' + lastTitle + ' ' + prevStr + '</li>';
+          }
+          businessHoursDisplay.innerHTML = html;
+
+          // Holiday Alert
+          if (holidayAlertContainer && parsed.holidays && parsed.holidays.length > 0) {
+            var today = new Date();
+            var yyyy = today.getFullYear();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            var todayStr = yyyy + '-' + mm + '-' + dd;
+
+            var upcoming = parsed.holidays.filter(function(h) { return h >= todayStr; }).sort();
+            if (upcoming.length > 0) {
+              var datesHtml = upcoming.map(function(d) { return '<b>' + d + '</b>'; }).join(', ');
+              holidayAlertContainer.innerHTML =
+                '<div style="background-color: #fef2f2; color: #991b1b; padding: 16px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #f87171;">'
+                + '<h4 style="margin: 0 0 8px 0; font-size: 18px;">⚠️ Notice: Temporary Closure</h4>'
+                + 'We will be closed on: <span style="font-size: 16px;">' + datesHtml + '</span>'
+                + '</div>';
+            }
+          }
+        } catch(e) {
+          // Fallback: show raw content
+          businessHoursDisplay.innerHTML = '<li>' + item.content + '</li>';
+        }
+      }
+
+      // === PAYMENT METHOD ===
+      if (item.id === 'payment_method' && paymentMethodDisplay) {
+        try {
+          var pmParsed = JSON.parse(item.content);
+          var active = Object.keys(pmParsed).filter(function(k) { return pmParsed[k]; });
+          paymentMethodDisplay.textContent = active.join(' | ');
+        } catch(e) {
+          paymentMethodDisplay.textContent = item.content;
+        }
+      }
+    });
+  }).catch(function(err) {
+    console.error('Network error:', err);
+  });
 })();

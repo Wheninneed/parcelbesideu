@@ -14,26 +14,20 @@
       padding: 32px;
       margin-top: 24px;
     }
-    .input-group {
-      margin-bottom: 24px;
-    }
+    .input-group { margin-bottom: 24px; }
     label {
       display: block;
       font-weight: 600;
       margin-bottom: 8px;
       font-size: 16px;
     }
-    textarea, input[type="email"], input[type="password"] {
+    input[type="email"], input[type="password"] {
       width: 100%;
       padding: 12px;
       border: 1px solid var(--divider);
       border-radius: 4px;
       font-family: inherit;
       font-size: 16px;
-    }
-    textarea {
-      min-height: 120px;
-      resize: vertical;
     }
     button.btn {
       background: #111827;
@@ -45,11 +39,35 @@
       cursor: pointer;
       font-weight: bold;
     }
-    button.btn:hover {
-      background: #1f2937;
+    button.btn:hover { background: #1f2937; }
+    .hidden { display: none; }
+    .day-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .hidden {
-      display: none;
+    .day-row span.day-label {
+      width: 40px;
+      font-weight: bold;
+      font-family: monospace;
+      font-size: 16px;
+    }
+    .day-row input[type="time"] { width: auto; padding: 6px; }
+    .day-row .closed-label {
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .day-row .closed-label input { width: 18px; height: 18px; }
+    .section-box {
+      background: var(--bg-hover);
+      padding: 16px;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -57,9 +75,7 @@
   
   <header>
     <div class="header-container">
-      <a href="index.html" class="logo">
-        📦 Parcel beside U (Admin)
-      </a>
+      <a href="index.html" class="logo">📦 Parcel beside U (Admin)</a>
       <button class="hamburger">☰</button>
       <nav class="nav-links">
         <a href="index.html">Back to Site</a>
@@ -68,7 +84,7 @@
   </header>
 
   <main>
-    <h1 class="page-title">Admin Dashboard (새로고침 완료!)</h1>
+    <h1 class="page-title">Admin Dashboard</h1>
     
     <!-- Login Section -->
     <div id="login-section" class="admin-container">
@@ -94,65 +110,136 @@
         <button class="btn" id="logout-btn" style="background: var(--divider); color: var(--text-main);">Logout</button>
       </div>
       
+      <!-- 1. Business Hours -->
       <div class="input-group">
-        <label>⏰ Business Hours (Use bullet points or plain text)</label>
-        <textarea id="edit-hours" placeholder="Loading..."></textarea>
+        <label>⏰ Business Hours</label>
+        <div id="business-hours-container" class="section-box" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="day-row" data-day="mon">
+            <span class="day-label">MON</span>
+            <input type="time" class="time-open" value="13:00"> <span>~</span>
+            <input type="time" class="time-close" value="19:00">
+            <label class="closed-label"><input type="checkbox" class="closed-checkbox"> Closed (휴무)</label>
+          </div>
+          <div class="day-row" data-day="tue">
+            <span class="day-label">TUE</span>
+            <input type="time" class="time-open" value="13:00"> <span>~</span>
+            <input type="time" class="time-close" value="19:00">
+            <label class="closed-label"><input type="checkbox" class="closed-checkbox"> Closed (휴무)</label>
+          </div>
+          <div class="day-row" data-day="wed">
+            <span class="day-label">WED</span>
+            <input type="time" class="time-open" value="13:00"> <span>~</span>
+            <input type="time" class="time-close" value="19:00">
+            <label class="closed-label"><input type="checkbox" class="closed-checkbox"> Closed (휴무)</label>
+          </div>
+          <div class="day-row" data-day="thu">
+            <span class="day-label">THU</span>
+            <input type="time" class="time-open" value="13:00"> <span>~</span>
+            <input type="time" class="time-close" value="19:00">
+            <label class="closed-label"><input type="checkbox" class="closed-checkbox"> Closed (휴무)</label>
+          </div>
+          <div class="day-row" data-day="fri">
+            <span class="day-label">FRI</span>
+            <input type="time" class="time-open" value="12:00"> <span>~</span>
+            <input type="time" class="time-close" value="18:00">
+            <label class="closed-label"><input type="checkbox" class="closed-checkbox"> Closed (휴무)</label>
+          </div>
+          <div class="day-row" data-day="sat">
+            <span class="day-label">SAT</span>
+            <input type="time" class="time-open" value=""> <span>~</span>
+            <input type="time" class="time-close" value="">
+            <label class="closed-label"><input type="checkbox" class="closed-checkbox" checked> Closed (휴무)</label>
+          </div>
+          <div class="day-row" data-day="sun">
+            <span class="day-label">SUN</span>
+            <input type="time" class="time-open" value=""> <span>~</span>
+            <input type="time" class="time-close" value="">
+            <label class="closed-label"><input type="checkbox" class="closed-checkbox" checked> Closed (휴무)</label>
+          </div>
+        </div>
       </div>
 
-      <div class="input-group">
+      <!-- 2. Holidays -->
+      <div class="input-group" style="margin-top: 32px;">
+        <label>🌴 Holidays (임시 휴무일 추가)</label>
+        <p style="font-size: 14px; margin-top: -4px; margin-bottom: 12px; opacity: 0.8;">Select a date to mark as closed. Visitors will see a prominent alert.</p>
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+          <input type="date" id="holiday-add-date" style="width: auto;">
+          <button id="add-holiday-btn" class="btn" style="padding: 8px 16px;" type="button">+ Add Date</button>
+        </div>
+        <ul id="holiday-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
+      </div>
+
+      <!-- 3. Payment Method -->
+      <div class="input-group" style="margin-top: 32px;">
         <label>💳 Payment Method</label>
-        <textarea id="edit-payment" placeholder="Loading..."></textarea>
+        <div id="payment-method-container" class="section-box" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <input type="text" id="new-payment-input" placeholder="예: 무통장입금 (Kakao Bank)" style="flex: 1; padding: 12px; border: 1px solid var(--divider); border-radius: 4px; font-size: 16px;" />
+          <button id="add-payment-btn" class="btn" style="padding: 8px 16px;" type="button">+ Add custom option</button>
+        </div>
       </div>
 
-      <button class="btn" id="save-btn">Save Changes</button>
-      <p id="save-status" style="color: green; margin-top: 12px; font-weight: bold;"></p>
+      <button class="btn" id="save-btn" style="margin-top: 24px; width: 100%;" type="button">Save Changes</button>
+      <p id="save-status" style="color: green; margin-top: 12px; font-weight: bold; text-align: center;"></p>
     </div>
 
   </main>
 
   <script>
+    // =============================================
+    // ALL ADMIN LOGIC — FULLY SELF-CONTAINED
+    // =============================================
+    const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
+
+    let db = null;
+    function getDb() {
+      if (!db && window.supabase) {
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+      return db;
+    }
+
+    // --- State ---
+    let holidays = [];
+    let paymentMethods = {};
+
+    // --- DOM refs ---
+    const loginSection = document.getElementById('login-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    const holidayList = document.getElementById('holiday-list');
+    const pmContainer = document.getElementById('payment-method-container');
+
+    // =============================================
+    // LOGIN
+    // =============================================
     window.handleAdminLogin = async function(e) {
       if (e) e.preventDefault();
-      
       const email = document.getElementById('admin-email').value;
       const password = document.getElementById('admin-password').value;
       const errorMsg = document.getElementById('login-error');
-      
-      const loginSection = document.getElementById('login-section');
-      const dashboardSection = document.getElementById('dashboard-section');
 
-      if (!window.supabase) {
+      const client = getDb();
+      if (!client) {
         errorMsg.style.color = 'red';
-        errorMsg.innerText = '인터넷 접속 문제로 라이브러리가 로드되지 않았습니다. 잠시 후 다시 시도해주세요.';
+        errorMsg.innerText = '인터넷 접속 문제로 라이브러리가 로드되지 않았습니다.';
         return false;
       }
-      
+
       errorMsg.style.color = '#eab308';
       errorMsg.innerText = '로그인 중입니다. 잠시만 기다려주세요...';
 
       try {
-        const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
-        window.tempSb = window.tempSb || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        const { data, error } = await window.tempSb.auth.signInWithPassword({ email: email, password: password });
-
+        const { data, error } = await client.auth.signInWithPassword({ email, password });
         if (error) {
           errorMsg.style.color = 'red';
           errorMsg.innerText = '로그인 실패: ' + error.message;
         } else {
-          errorMsg.innerText = '로그인 성공!';
+          errorMsg.innerText = '';
           loginSection.classList.add('hidden');
           dashboardSection.classList.remove('hidden');
-          
-          // Fetch settings immediately
-          const { data: sData } = await window.tempSb.from('site_settings').select('*');
-          if (sData) {
-            sData.forEach(item => {
-              if (item.id === 'business_hours') document.getElementById('edit-hours').value = item.content;
-              if (item.id === 'payment_method') document.getElementById('edit-payment').value = item.content;
-            });
-          }
+          loadDashboardData();
         }
       } catch (err) {
         errorMsg.style.color = 'red';
@@ -160,7 +247,268 @@
       }
       return false;
     };
+
+    // =============================================
+    // RENDER: Holidays
+    // =============================================
+    function renderHolidays() {
+      holidayList.innerHTML = '';
+      holidays.sort().forEach(function(date, index) {
+        var li = document.createElement('li');
+        li.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#f3f4f6; padding:8px 12px; border-radius:4px;';
+        
+        var span = document.createElement('span');
+        span.innerHTML = '🛑 Closed on: <b>' + date + '</b>';
+        
+        var btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.cssText = 'padding:4px 8px; font-size:12px; background:#ef4444;';
+        btn.textContent = 'Remove';
+        btn.addEventListener('click', function() {
+          holidays.splice(index, 1);
+          renderHolidays();
+        });
+        
+        li.appendChild(span);
+        li.appendChild(btn);
+        holidayList.appendChild(li);
+      });
+    }
+
+    // =============================================
+    // RENDER: Payment Methods
+    // =============================================
+    var standardPayments = ['Cash', 'Venmo', 'Paypal', 'Credit Card', 'Wire transfer(Korean bank)'];
+
+    function renderPaymentMethods() {
+      pmContainer.innerHTML = '';
+      var keys = Object.keys(paymentMethods);
+      keys.sort(function(a, b) {
+        var ia = standardPayments.indexOf(a);
+        var ib = standardPayments.indexOf(b);
+        if (ia === -1) ia = 999;
+        if (ib === -1) ib = 999;
+        return ia - ib;
+      });
+
+      keys.forEach(function(key) {
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex; align-items:center; gap:8px; padding:4px 0;';
+
+        var lbl = document.createElement('label');
+        lbl.style.cssText = 'margin-bottom:0; display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;';
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = paymentMethods[key];
+        cb.style.cssText = 'width:18px; height:18px;';
+        cb.addEventListener('change', function() {
+          paymentMethods[key] = cb.checked;
+        });
+
+        var sp = document.createElement('span');
+        sp.style.fontSize = '16px';
+        sp.textContent = key;
+
+        lbl.appendChild(cb);
+        lbl.appendChild(sp);
+        div.appendChild(lbl);
+
+        // Custom items get a delete button
+        if (standardPayments.indexOf(key) === -1) {
+          var delBtn = document.createElement('button');
+          delBtn.textContent = '❌';
+          delBtn.style.cssText = 'border:none; background:transparent; color:#ef4444; cursor:pointer; font-size:14px;';
+          delBtn.addEventListener('click', function() {
+            delete paymentMethods[key];
+            renderPaymentMethods();
+          });
+          div.appendChild(delBtn);
+        }
+
+        pmContainer.appendChild(div);
+      });
+    }
+
+    // =============================================
+    // LOAD DATA from Supabase
+    // =============================================
+    async function loadDashboardData() {
+      var client = getDb();
+      if (!client) return;
+
+      try {
+        var result = await client.from('site_settings').select('*');
+        var data = result.data;
+        var foundPayment = false;
+
+        if (data) {
+          data.forEach(function(item) {
+            if (item.id === 'business_hours') {
+              try {
+                var parsed = JSON.parse(item.content);
+                document.querySelectorAll('.day-row').forEach(function(row) {
+                  var day = row.getAttribute('data-day');
+                  var info = parsed.regular ? parsed.regular[day] : null;
+                  if (info) {
+                    row.querySelector('.time-open').value = info.open || '';
+                    row.querySelector('.time-close').value = info.close || '';
+                    row.querySelector('.closed-checkbox').checked = !!info.closed;
+                  }
+                });
+                holidays = parsed.holidays || [];
+                renderHolidays();
+              } catch(e) {
+                console.warn('Old business_hours format, using defaults');
+              }
+            }
+            if (item.id === 'payment_method') {
+              foundPayment = true;
+              try {
+                paymentMethods = JSON.parse(item.content);
+              } catch(e) {
+                paymentMethods = { 'Cash': true, 'Venmo': true, 'Paypal': true, 'Credit Card': true, 'Wire transfer(Korean bank)': true };
+              }
+              renderPaymentMethods();
+            }
+          });
+        }
+
+        if (!foundPayment) {
+          paymentMethods = { 'Cash': true, 'Venmo': true, 'Paypal': true, 'Credit Card': true, 'Wire transfer(Korean bank)': true };
+          renderPaymentMethods();
+        }
+      } catch(err) {
+        console.error('Load error:', err);
+        paymentMethods = { 'Cash': true, 'Venmo': true, 'Paypal': true, 'Credit Card': true, 'Wire transfer(Korean bank)': true };
+        renderPaymentMethods();
+      }
+
+      // Closed checkbox → disable time inputs
+      document.querySelectorAll('.day-row').forEach(function(row) {
+        var cb = row.querySelector('.closed-checkbox');
+        var t1 = row.querySelector('.time-open');
+        var t2 = row.querySelector('.time-close');
+        function toggle() {
+          t1.disabled = cb.checked;
+          t2.disabled = cb.checked;
+          t1.style.opacity = cb.checked ? '0.4' : '1';
+          t2.style.opacity = cb.checked ? '0.4' : '1';
+        }
+        cb.addEventListener('change', toggle);
+        toggle();
+      });
+    }
+
+    // =============================================
+    // EVENT LISTENERS
+    // =============================================
+
+    // Add Holiday
+    document.getElementById('add-holiday-btn').addEventListener('click', function() {
+      var dateInput = document.getElementById('holiday-add-date');
+      var date = dateInput.value;
+      if (date && holidays.indexOf(date) === -1) {
+        holidays.push(date);
+        dateInput.value = '';
+        renderHolidays();
+      }
+    });
+
+    // Add Custom Payment
+    document.getElementById('add-payment-btn').addEventListener('click', function() {
+      var input = document.getElementById('new-payment-input');
+      var val = input.value.trim();
+      if (val && paymentMethods[val] === undefined) {
+        paymentMethods[val] = true;
+        input.value = '';
+        renderPaymentMethods();
+      }
+    });
+
+    // Save
+    document.getElementById('save-btn').addEventListener('click', async function() {
+      var statusText = document.getElementById('save-status');
+      var client = getDb();
+      if (!client) {
+        statusText.style.color = 'red';
+        statusText.innerText = 'Error: Not connected to database.';
+        return;
+      }
+
+      statusText.style.color = '#eab308';
+      statusText.innerText = 'Saving...';
+
+      var regular = {};
+      document.querySelectorAll('.day-row').forEach(function(row) {
+        var day = row.getAttribute('data-day');
+        regular[day] = {
+          open: row.querySelector('.time-open').value,
+          close: row.querySelector('.time-close').value,
+          closed: row.querySelector('.closed-checkbox').checked
+        };
+      });
+
+      var hoursJson = JSON.stringify({ regular: regular, holidays: holidays });
+      var paymentJson = JSON.stringify(paymentMethods);
+
+      // Helper: update existing row, or insert if not found
+      async function saveRow(client, id, content) {
+        // Try update first
+        var res = await client.from('site_settings').update({ content: content }).eq('id', id);
+        if (res.error) {
+          // If update fails (maybe row doesn't exist), try insert
+          var ins = await client.from('site_settings').insert({ id: id, content: content });
+          return ins;
+        }
+        return res;
+      }
+
+      var r1 = await saveRow(client, 'business_hours', hoursJson);
+      var r2 = await saveRow(client, 'payment_method', paymentJson);
+
+      if (r1.error || r2.error) {
+        statusText.style.color = 'red';
+        statusText.innerText = 'Error: ' + (r1.error ? r1.error.message : r2.error.message);
+      } else {
+        statusText.style.color = 'green';
+        statusText.innerText = '✅ Changes saved successfully!';
+        setTimeout(function() { statusText.innerText = ''; }, 3000);
+      }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async function() {
+      var client = getDb();
+      if (client) await client.auth.signOut();
+      location.reload();
+    });
+
+    // Mobile hamburger
+    var hamburger = document.querySelector('.hamburger');
+    var navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', function() {
+        navLinks.classList.toggle('active');
+      });
+    }
+
+    // Auto-login if session exists
+    (async function() {
+      var client = getDb();
+      if (client) {
+        try {
+          var result = await client.auth.getSession();
+          if (result.data && result.data.session) {
+            loginSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            loadDashboardData();
+          }
+        } catch(e) {
+          console.warn('Session check failed:', e);
+        }
+      }
+    })();
   </script>
-  <script src="app.js?v=final_fix"></script>
 </body>
 </html>
