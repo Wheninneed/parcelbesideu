@@ -228,6 +228,29 @@ p, ul, ol {
   font-size: 20px;
 }
 
+/* Business Hours two-column table style */
+.hours-row {
+  display: flex;
+  gap: 0;
+  padding: 6px 0;
+  font-size: 26px;
+  font-weight: 400;
+  list-style: none;
+}
+.hours-row .hours-day {
+  min-width: 220px;
+  font-weight: 500;
+}
+.hours-row .hours-time {
+  font-weight: 600;
+}
+.hours-note {
+  margin-top: 16px;
+  font-size: 18px;
+  color: var(--text-gray);
+  font-style: italic;
+}
+
 .footer-nav {
   margin-top: 48px;
   padding-top: 24px;

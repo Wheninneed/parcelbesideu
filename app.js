@@ -72,10 +72,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
           var html = '';
           var currentGroup = [];
           var prevStr = null;
+          var prevClosed = false;
 
           for (var i = 0; i < dayIds.length; i++) {
             var info = parsed.regular[dayIds[i]] || { closed: true };
             var str = info.closed ? 'CLOSED' : (info.open + ' - ' + info.close);
+            var isClosed = !!info.closed;
 
             if (str === prevStr) {
               currentGroup.push(dayLabels[i]);
@@ -87,10 +89,11 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 if (title === 'FRI') title = 'FRIDAY';
                 if (title === 'SAT') title = 'SATURDAY';
                 if (title === 'SUN') title = 'SUNDAY';
-                html += '<li>' + title + ' ' + prevStr + '</li>';
+                html += '<li class="hours-row"><span class="hours-day">' + title + '</span><span class="hours-time">' + prevStr + '</span></li>';
               }
               currentGroup = [dayLabels[i]];
               prevStr = str;
+              prevClosed = isClosed;
             }
           }
           if (currentGroup.length > 0) {
@@ -100,8 +103,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             if (lastTitle === 'FRI') lastTitle = 'FRIDAY';
             if (lastTitle === 'SAT') lastTitle = 'SATURDAY';
             if (lastTitle === 'SUN') lastTitle = 'SUNDAY';
-            html += '<li>' + lastTitle + ' ' + prevStr + '</li>';
+            html += '<li class="hours-row"><span class="hours-day">' + lastTitle + '</span><span class="hours-time">' + prevStr + '</span></li>';
           }
+          html += '<li class="hours-note">📌 Regardless of business hours, we are taking requests &amp; inquiries 24/7</li>';
           businessHoursDisplay.innerHTML = html;
 
           // Holiday Alert
