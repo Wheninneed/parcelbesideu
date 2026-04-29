@@ -162,9 +162,10 @@
       <!-- 2. Holidays -->
       <div class="input-group" style="margin-top: 32px;">
         <label>🌴 Holidays (임시 휴무일 추가)</label>
-        <p style="font-size: 14px; margin-top: -4px; margin-bottom: 12px; opacity: 0.8;">Select a date to mark as closed. Visitors will see a prominent alert.</p>
+        <p style="font-size: 14px; margin-top: -4px; margin-bottom: 12px; opacity: 0.8;">Select a date to mark as closed. Optionally add a reason (e.g. "National Holiday").</p>
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
           <input type="date" id="holiday-add-date" style="width: auto;">
+          <input type="text" id="holiday-add-reason" placeholder="Reason (optional)" style="flex: 1; min-width: 150px; padding: 6px 10px; border: 1px solid var(--divider); border-radius: 4px; font-size: 14px;" />
           <button id="add-holiday-btn" class="btn" style="padding: 8px 16px;" type="button">+ Add Date</button>
         </div>
         <ul id="holiday-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;"></ul>
@@ -253,12 +254,16 @@
     // =============================================
     function renderHolidays() {
       holidayList.innerHTML = '';
-      holidays.sort().forEach(function(date, index) {
+      holidays.sort(function(a, b) { return a.date < b.date ? -1 : 1; }).forEach(function(item, index) {
         var li = document.createElement('li');
         li.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#f3f4f6; padding:8px 12px; border-radius:4px;';
         
         var span = document.createElement('span');
-        span.innerHTML = '🛑 Closed on: <b>' + date + '</b>';
+        var label = '🛑 Closed on: <b>' + item.date + '</b>';
+        if (item.reason) {
+          label += ' <span style="color: var(--text-gray); font-size:14px;">— ' + item.reason + '</span>';
+        }
+        span.innerHTML = label;
         
         var btn = document.createElement('button');
         btn.className = 'btn';
@@ -356,7 +361,12 @@
                     row.querySelector('.closed-checkbox').checked = !!info.closed;
                   }
                 });
-                holidays = parsed.holidays || [];
+                // Support both old string[] and new {date,reason}[] format
+                var rawHolidays = parsed.holidays || [];
+                holidays = rawHolidays.map(function(h) {
+                  if (typeof h === 'string') return { date: h, reason: '' };
+                  return h;
+                });
                 renderHolidays();
               } catch(e) {
                 console.warn('Old business_hours format, using defaults');
@@ -407,10 +417,13 @@
     // Add Holiday
     document.getElementById('add-holiday-btn').addEventListener('click', function() {
       var dateInput = document.getElementById('holiday-add-date');
+      var reasonInput = document.getElementById('holiday-add-reason');
       var date = dateInput.value;
-      if (date && holidays.indexOf(date) === -1) {
-        holidays.push(date);
+      var reason = reasonInput.value.trim();
+      if (date && !holidays.some(function(h) { return h.date === date; })) {
+        holidays.push({ date: date, reason: reason });
         dateInput.value = '';
+        reasonInput.value = '';
         renderHolidays();
       }
     });

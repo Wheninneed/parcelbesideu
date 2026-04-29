@@ -116,23 +116,35 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             var dd = String(today.getDate()).padStart(2, '0');
             var todayStr = yyyy + '-' + mm + '-' + dd;
 
-            var upcoming = parsed.holidays.filter(function(h) { return h >= todayStr; }).sort();
+            // Normalize: support both old string[] and new {date,reason}[] format
+            var normalized = parsed.holidays.map(function(h) {
+              if (typeof h === 'string') return { date: h, reason: '' };
+              return h;
+            });
+
+            var upcoming = normalized.filter(function(h) { return h.date >= todayStr; }).sort(function(a, b) { return a.date < b.date ? -1 : 1; });
             if (upcoming.length > 0) {
+              // Collect unique reasons
+              var reasons = [];
+              upcoming.forEach(function(h) {
+                if (h.reason && reasons.indexOf(h.reason) === -1) reasons.push(h.reason);
+              });
+
               // Group consecutive dates into ranges
               var ranges = [];
-              var rangeStart = upcoming[0];
-              var rangeEnd = upcoming[0];
+              var rangeStart = upcoming[0].date;
+              var rangeEnd = upcoming[0].date;
               
               for (var ri = 1; ri < upcoming.length; ri++) {
                 var prev = new Date(rangeEnd);
-                var curr = new Date(upcoming[ri]);
+                var curr = new Date(upcoming[ri].date);
                 var diff = (curr - prev) / (1000 * 60 * 60 * 24);
                 if (diff === 1) {
-                  rangeEnd = upcoming[ri];
+                  rangeEnd = upcoming[ri].date;
                 } else {
                   ranges.push({ start: rangeStart, end: rangeEnd });
-                  rangeStart = upcoming[ri];
-                  rangeEnd = upcoming[ri];
+                  rangeStart = upcoming[ri].date;
+                  rangeEnd = upcoming[ri].date;
                 }
               }
               ranges.push({ start: rangeStart, end: rangeEnd });
@@ -151,10 +163,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 }
               });
 
+              var reasonLine = '';
+              if (reasons.length > 0) {
+                reasonLine = '<div style="margin-top: 6px; font-size: 16px; opacity: 0.85;">' + reasons.join(' / ') + '</div>';
+              }
+
               holidayAlertContainer.innerHTML =
                 '<div style="background-color: #fef2f2; color: #991b1b; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #f87171; font-size: 18px;">'
                 + '<h4 style="margin: 0 0 8px 0; font-size: 20px;">⚠️ Notice: Temporary Closure</h4>'
                 + 'We will be closed on: <span>' + rangeTexts.join(', ') + '</span>'
+                + reasonLine
                 + '</div>';
             }
           }
