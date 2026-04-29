@@ -251,6 +251,132 @@ p, ul, ol {
   font-style: italic;
 }
 
+/* Slogan */
+.slogan {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+.slogan-sub {
+  font-size: 18px;
+  color: var(--text-gray);
+  margin-bottom: 32px;
+}
+
+/* Service Cards */
+.service-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-gray);
+  margin-bottom: 16px;
+}
+.service-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.service-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  color: var(--text-main);
+  padding: 20px 24px;
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  transition: background-color 0.15s, box-shadow 0.15s;
+  background: var(--bg-main);
+}
+.service-card:hover {
+  background-color: var(--bg-hover);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.service-card .card-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+.service-card .card-body {
+  flex: 1;
+  min-width: 0;
+}
+.service-card .card-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.service-card .card-desc {
+  font-size: 15px;
+  color: var(--text-gray);
+  line-height: 1.4;
+}
+.service-card .card-price {
+  flex-shrink: 0;
+  background: var(--yellow-bg);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.service-card .card-arrow {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--text-gray);
+  margin-left: 4px;
+}
+
+/* Detail page steps */
+.step-list {
+  counter-reset: step-counter;
+  list-style: none;
+  padding: 0;
+}
+.step-list li {
+  counter-increment: step-counter;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--divider);
+}
+.step-list li:last-child { border-bottom: none; }
+.step-list li::before {
+  content: counter(step-counter);
+  background: var(--text-main);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.price-highlight {
+  background: var(--yellow-bg);
+  padding: 20px 24px;
+  border-radius: 8px;
+  margin: 24px 0;
+}
+.price-highlight .price-main {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.price-highlight .price-note {
+  font-size: 15px;
+  color: var(--text-gray);
+}
+
 .footer-nav {
   margin-top: 48px;
   padding-top: 24px;
@@ -274,13 +400,14 @@ p, ul, ol {
   .logo { font-size: 20px; }
   .page-title { font-size: 32px; }
   .page-description { font-size: 16px; }
+  .slogan { font-size: 22px; }
+  .slogan-sub { font-size: 15px; }
   h1 { font-size: 28px; }
   h2 { font-size: 24px; }
   h3 { font-size: 20px; }
   h4 { font-size: 18px; }
   .bookmark-title { font-size: 16px; }
   .bookmark-desc { font-size: 13px; }
-  
   
   .hamburger {
     display: block;
@@ -304,6 +431,18 @@ p, ul, ol {
   main {
     padding-top: 48px;
   }
+  
+  .service-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  .service-card .card-icon { font-size: 26px; width: 36px; }
+  .service-card .card-title { font-size: 17px; }
+  .service-card .card-desc { font-size: 13px; }
+  .service-card .card-price { font-size: 13px; padding: 4px 10px; }
+  
+  .hours-row { font-size: 20px; }
+  .hours-row .hours-day { min-width: 140px; }
   
   .bookmark-card {
     flex-direction: column;

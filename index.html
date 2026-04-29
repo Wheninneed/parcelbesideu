@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parcel Beside U</title>
+  <title>Parcel Beside U — Your Korean Address Near Camp Humphreys</title>
+  <meta name="description" content="Package holding and order service for US military personnel at Camp Humphreys. Use our Korean address, pick up anytime." />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -12,7 +13,6 @@
   <header>
     <div class="header-container">
       <a href="index.html" class="logo">
-        <!-- Using text or simple emoji since we don't have the original logo image -->
         📦 Parcel beside U
       </a>
       <button class="hamburger">☰</button>
@@ -24,68 +24,54 @@
 
   <main>
     <div class="image-block">
-      <img src="assets/hero_banner.png" alt="Hero Banner" />
+      <img src="assets/hero_banner.png" alt="Parcel Beside U — Package service near Camp Humphreys" />
     </div>
 
-    <h1 class="page-title">Having trouble ordering from Korean online shopping malls?<br/>Let us take care of it for you!</h1>
-    
-    <p class="page-description">We offer a service that we place an order on your behalf and have them delivered directly to your doorstep, no need to visit a physical store.</p>
-    
-    <hr />
+    <h1 class="slogan">No Korean address?<br/>No problem. We've got you covered.</h1>
+    <p class="slogan-sub">5-minute walk from Camp Humphreys walking gate.</p>
 
-    <h2 class="emoji-heading">📦 Package Holding (택배 대리수령)</h2>
-    <p>Do you not have a Korean address to receive the package? We're happy to provide you with a convenient and trusted address!</p>
+    <div id="holiday-alert-container"></div>
 
-    <!-- Notion Bookmark block mimicking -->
-    <a href="package-holding.html" class="bookmark-card">
-      <div class="bookmark-content">
-        <div class="bookmark-title">$7 or (10000 KRW)</div>
-        <div class="bookmark-desc">We provide a convenient shopping solution for US military personnel based at Camp Humphreys, who do not have a physical Korean address to receive packages. We offer a package holding service, where customers can have their online purchases delivered to our office and pick them up at their convenience for a small fee of $7.</div>
-        <div class="bookmark-url">
-          <span>🔗 parcelbesideu.oopy.io</span>
+    <!-- Services -->
+    <p class="service-section-title">Our Services</p>
+    <div class="service-grid">
+
+      <a href="package-holding.html" class="service-card" id="svc-holding">
+        <span class="card-icon">📦</span>
+        <div class="card-body">
+          <div class="card-title">Package Holding</div>
+          <div class="card-desc">Use our address, pick up anytime</div>
         </div>
-      </div>
-    </a>
-    
-    <div style="margin-top: 16px;">
-      <a href="package-holding-guide.html" class="page-link">↳ 📝 How to request a service</a>
-    </div>
+        <span class="card-price">$7</span>
+        <span class="card-arrow">→</span>
+      </a>
 
-    <hr />
-
-    <h2 class="emoji-heading">🛒 Online Shopping</h2>
-    <p>If you are experiencing difficulties with payment on domestic shopping malls, we can place the order and complete the payment on your behalf!</p>
-
-    <a href="online-shopping-1.html" class="bookmark-card">
-      <div class="bookmark-content">
-        <div class="bookmark-title">5% of the price of item + $7</div>
-        <div class="bookmark-desc">For US military personnel stationed at Camp Humphreys who don't have a Korean address to receive packages and need help placing orders from online shopping malls. Simply provide us with the details of the item you'd like to purchase, we'll make the payment on your behalf and receive it at our office for your convenience.</div>
-        <div class="bookmark-url">
-          <span>🔗 parcelbesideu.oopy.io</span>
+      <a href="online-shopping-1.html" class="service-card" id="svc-order-hold">
+        <span class="card-icon">🛒</span>
+        <div class="card-body">
+          <div class="card-title">Order & Hold</div>
+          <div class="card-desc">We order for you, pick up at our office</div>
         </div>
-      </div>
-    </a>
+        <span class="card-price">5% + $7</span>
+        <span class="card-arrow">→</span>
+      </a>
 
-    <a href="online-shopping-2.html" class="bookmark-card">
-      <div class="bookmark-content">
-        <div class="bookmark-title">5% of the price of item + $7 (Delivery to Doorstep)</div>
-        <div class="bookmark-desc">For those who can't pay with an overseas card or are struggling with language barriers while shopping online. Simply provide us with the details of the item you'd like to purchase, and we'll make the payment on your behalf and have it delivered directly to your doorstep.</div>
-        <div class="bookmark-url">
-          <span>🔗 parcelbesideu.oopy.io</span>
+      <a href="online-shopping-2.html" class="service-card" id="svc-order-deliver">
+        <span class="card-icon">🚚</span>
+        <div class="card-body">
+          <div class="card-title">Order & Deliver</div>
+          <div class="card-desc">We order for you, delivered to your door</div>
         </div>
-      </div>
-    </a>
-    
-    <div style="margin-top: 16px;">
-      <a href="recommended-malls.html" class="page-link">↳ 🛍️ Recommended Shopping mall List</a>
+        <span class="card-price">5% + $7</span>
+        <span class="card-arrow">→</span>
+      </a>
+
     </div>
 
     <hr />
 
     <div class="info-section">
       <h3 class="emoji-heading">📞 010-6749-1519</h3>
-      
-      <div id="holiday-alert-container"></div>
       
       <h3 class="emoji-heading">⏰ Business Hours</h3>
       <ul id="business-hours-content">
@@ -111,6 +97,6 @@
 
   </main>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
