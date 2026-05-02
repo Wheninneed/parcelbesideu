@@ -668,9 +668,9 @@
       var paymentJson = JSON.stringify(paymentMethods);
       var storesJson = JSON.stringify(storesData);
 
-      // Helper: upsert row
+      // Helper: update row (relies on row existing in DB)
       async function saveRow(client, id, content) {
-        var res = await client.from('site_settings').upsert({ id: id, content: content });
+        var res = await client.from('site_settings').update({ content: content }).eq('id', id);
         return res;
       }
 
