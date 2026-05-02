@@ -201,13 +201,11 @@
         <p style="font-weight:600; margin-bottom:8px;">⭐ Featured Stores</p>
         <p style="font-size:13px; opacity:0.7; margin-bottom:10px;">Shown prominently at top of the stores page.</p>
         <ul id="featured-stores-admin" style="list-style:none; padding:0; margin:0 0 12px 0; display:flex; flex-direction:column; gap:6px;"></ul>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
-          <input type="text" id="feat-name" placeholder="Store Name" style="width:120px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
-          <input type="url" id="feat-url" placeholder="https://..." style="width:180px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
-          <input type="text" id="feat-desc" placeholder="Short description" style="flex:1; min-width:120px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
-          <select id="feat-cat" style="padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;"></select>
-          <input type="url" id="feat-logo" placeholder="Logo URL (optional)" style="width:160px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
-          <button id="add-featured-btn" class="btn" style="padding:6px 14px; font-size:14px;" type="button">+ Add</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <select id="feat-select" style="flex:1; max-width:400px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;">
+            <option value="">Select a store from "All Stores"...</option>
+          </select>
+          <button id="add-featured-btn" class="btn" style="padding:6px 14px; font-size:14px;" type="button">+ Add to Featured</button>
         </div>
 
         <hr style="margin: 20px 0;" />
@@ -357,15 +355,30 @@
       });
 
       // Update category dropdowns
-      ['feat-cat', 'store-cat'].forEach(function(id) {
+      // Update category dropdowns
+      ['store-cat'].forEach(function(id) {
         var sel = document.getElementById(id);
-        sel.innerHTML = '';
-        storesData.categories.forEach(function(c) {
-          var opt = document.createElement('option');
-          opt.value = c; opt.textContent = c;
-          sel.appendChild(opt);
-        });
+        if (sel) {
+          sel.innerHTML = '';
+          storesData.categories.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c; opt.textContent = c;
+            sel.appendChild(opt);
+          });
+        }
       });
+
+      // Update Featured select dropdown
+      var featSel = document.getElementById('feat-select');
+      if (featSel) {
+        featSel.innerHTML = '<option value="">Select a store from "All Stores"...</option>';
+        storesData.stores.forEach(function(store, i) {
+          var opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = store.name + ' (' + (store.category || 'No Category') + ')';
+          featSel.appendChild(opt);
+        });
+      }
 
       // Featured stores list
       var featList = document.getElementById('featured-stores-admin');
@@ -599,18 +612,19 @@
 
     // Add Featured Store
     document.getElementById('add-featured-btn').addEventListener('click', function() {
-      var name = document.getElementById('feat-name').value.trim();
-      var url = document.getElementById('feat-url').value.trim();
-      var desc = document.getElementById('feat-desc').value.trim();
-      var cat = document.getElementById('feat-cat').value;
-      var logo = document.getElementById('feat-logo').value.trim();
-      if (name && url) {
-        storesData.featured.push({ name: name, url: url, desc: desc, category: cat, logo: logo || '' });
-        document.getElementById('feat-name').value = '';
-        document.getElementById('feat-url').value = '';
-        document.getElementById('feat-desc').value = '';
-        document.getElementById('feat-logo').value = '';
-        renderStoresAdmin();
+      var sel = document.getElementById('feat-select');
+      var idx = sel.value;
+      if (idx !== '') {
+        var store = storesData.stores[idx];
+        // Ensure not already in featured list
+        var alreadyExists = storesData.featured.some(function(f) { return f.url === store.url; });
+        if (!alreadyExists) {
+          // Clone the object
+          storesData.featured.push(Object.assign({}, store));
+          renderStoresAdmin();
+        } else {
+          alert('This store is already in Featured Stores.');
+        }
       }
     });
 
