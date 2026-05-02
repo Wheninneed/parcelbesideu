@@ -668,15 +668,9 @@
       var paymentJson = JSON.stringify(paymentMethods);
       var storesJson = JSON.stringify(storesData);
 
-      // Helper: update existing row, or insert if not found
+      // Helper: upsert row
       async function saveRow(client, id, content) {
-        // Try update first
-        var res = await client.from('site_settings').update({ content: content }).eq('id', id);
-        if (res.error) {
-          // If update fails (maybe row doesn't exist), try insert
-          var ins = await client.from('site_settings').insert({ id: id, content: content });
-          return ins;
-        }
+        var res = await client.from('site_settings').upsert({ id: id, content: content });
         return res;
       }
 
