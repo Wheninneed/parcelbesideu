@@ -181,6 +181,50 @@
         </div>
       </div>
 
+      <!-- 4. Recommended Stores -->
+      <div class="input-group" style="margin-top: 32px;">
+        <label>🛍️ Recommended Stores</label>
+
+        <!-- Categories -->
+        <div style="margin-bottom: 20px;">
+          <p style="font-weight:600; margin-bottom:8px;">Categories</p>
+          <div id="categories-list" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;"></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="new-category-input" placeholder="New category" style="flex:1; padding:8px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+            <button id="add-category-btn" class="btn" style="padding:6px 14px; font-size:14px;" type="button">+ Add</button>
+          </div>
+        </div>
+
+        <hr style="margin: 20px 0;" />
+
+        <!-- Featured Stores -->
+        <p style="font-weight:600; margin-bottom:8px;">⭐ Featured Stores</p>
+        <p style="font-size:13px; opacity:0.7; margin-bottom:10px;">Shown prominently at top of the stores page.</p>
+        <ul id="featured-stores-admin" style="list-style:none; padding:0; margin:0 0 12px 0; display:flex; flex-direction:column; gap:6px;"></ul>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
+          <input type="text" id="feat-name" placeholder="Store Name" style="width:120px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <input type="url" id="feat-url" placeholder="https://..." style="width:180px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <input type="text" id="feat-desc" placeholder="Short description" style="flex:1; min-width:120px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <select id="feat-cat" style="padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;"></select>
+          <input type="url" id="feat-logo" placeholder="Logo URL (optional)" style="width:160px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <button id="add-featured-btn" class="btn" style="padding:6px 14px; font-size:14px;" type="button">+ Add</button>
+        </div>
+
+        <hr style="margin: 20px 0;" />
+
+        <!-- All Stores -->
+        <p style="font-weight:600; margin-bottom:8px;">🏷️ All Stores (by Category)</p>
+        <ul id="all-stores-admin" style="list-style:none; padding:0; margin:0 0 12px 0; display:flex; flex-direction:column; gap:6px;"></ul>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:end;">
+          <input type="text" id="store-name" placeholder="Store Name" style="width:120px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <input type="url" id="store-url" placeholder="https://..." style="width:180px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <input type="text" id="store-desc" placeholder="Short description" style="flex:1; min-width:120px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <select id="store-cat" style="padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;"></select>
+          <input type="url" id="store-logo" placeholder="Logo URL (optional)" style="width:160px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <button id="add-store-btn" class="btn" style="padding:6px 14px; font-size:14px;" type="button">+ Add</button>
+        </div>
+      </div>
+
       <button class="btn" id="save-btn" style="margin-top: 24px; width: 100%;" type="button">Save Changes</button>
       <p id="save-status" style="color: green; margin-top: 12px; font-weight: bold; text-align: center;"></p>
     </div>
@@ -205,6 +249,11 @@
     // --- State ---
     let holidays = [];
     let paymentMethods = {};
+    let storesData = {
+      featured: [],
+      stores: [],
+      categories: ['E-commerce', 'Beauty', 'Fashion', 'Food & Grocery', 'Pet', 'Lifestyle', 'Electronics']
+    };
 
     // --- DOM refs ---
     const loginSection = document.getElementById('login-section');
@@ -284,6 +333,98 @@
     // RENDER: Payment Methods
     // =============================================
     var standardPayments = ['Cash', 'Venmo', 'Paypal', 'Credit Card', 'Wire transfer(Korean bank)'];
+
+    // =============================================
+    // RENDER: Stores Admin
+    // =============================================
+    function renderStoresAdmin() {
+      // Categories
+      var catList = document.getElementById('categories-list');
+      catList.innerHTML = '';
+      storesData.categories.forEach(function(cat, i) {
+        var span = document.createElement('span');
+        span.style.cssText = 'display:inline-flex; align-items:center; gap:4px; background:#f3f4f6; padding:4px 10px; border-radius:12px; font-size:13px;';
+        span.textContent = cat;
+        var del = document.createElement('button');
+        del.textContent = '✕';
+        del.style.cssText = 'border:none; background:none; color:#ef4444; cursor:pointer; font-size:12px; padding:0 2px;';
+        del.addEventListener('click', function() {
+          storesData.categories.splice(i, 1);
+          renderStoresAdmin();
+        });
+        span.appendChild(del);
+        catList.appendChild(span);
+      });
+
+      // Update category dropdowns
+      ['feat-cat', 'store-cat'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        sel.innerHTML = '';
+        storesData.categories.forEach(function(c) {
+          var opt = document.createElement('option');
+          opt.value = c; opt.textContent = c;
+          sel.appendChild(opt);
+        });
+      });
+
+      // Featured stores list
+      var featList = document.getElementById('featured-stores-admin');
+      featList.innerHTML = '';
+      storesData.featured.forEach(function(store, i) {
+        var li = document.createElement('li');
+        li.style.cssText = 'display:flex; align-items:center; gap:8px; background:#f3f4f6; padding:8px 12px; border-radius:4px; flex-wrap:wrap;';
+        li.innerHTML = '<strong>' + store.name + '</strong> <span style="color:var(--text-gray);font-size:13px;">' + (store.category || '') + '</span> <a href="' + store.url + '" target="_blank" style="font-size:12px;">🔗</a>';
+        var controls = document.createElement('span');
+        controls.style.cssText = 'margin-left:auto; display:flex; gap:4px;';
+        if (i > 0) {
+          var up = document.createElement('button');
+          up.textContent = '↑'; up.style.cssText = 'border:1px solid var(--divider);background:white;cursor:pointer;padding:2px 6px;border-radius:3px;';
+          up.addEventListener('click', function() { var t = storesData.featured[i]; storesData.featured[i] = storesData.featured[i-1]; storesData.featured[i-1] = t; renderStoresAdmin(); });
+          controls.appendChild(up);
+        }
+        if (i < storesData.featured.length - 1) {
+          var dn = document.createElement('button');
+          dn.textContent = '↓'; dn.style.cssText = 'border:1px solid var(--divider);background:white;cursor:pointer;padding:2px 6px;border-radius:3px;';
+          dn.addEventListener('click', function() { var t = storesData.featured[i]; storesData.featured[i] = storesData.featured[i+1]; storesData.featured[i+1] = t; renderStoresAdmin(); });
+          controls.appendChild(dn);
+        }
+        var rm = document.createElement('button');
+        rm.textContent = '✕'; rm.style.cssText = 'border:none;background:none;color:#ef4444;cursor:pointer;font-size:14px;';
+        rm.addEventListener('click', function() { storesData.featured.splice(i, 1); renderStoresAdmin(); });
+        controls.appendChild(rm);
+        li.appendChild(controls);
+        featList.appendChild(li);
+      });
+
+      // All stores list
+      var allList = document.getElementById('all-stores-admin');
+      allList.innerHTML = '';
+      storesData.stores.forEach(function(store, i) {
+        var li = document.createElement('li');
+        li.style.cssText = 'display:flex; align-items:center; gap:8px; background:#f3f4f6; padding:8px 12px; border-radius:4px; flex-wrap:wrap;';
+        li.innerHTML = '<strong>' + store.name + '</strong> <span style="color:var(--text-gray);font-size:13px;">' + (store.category || '') + '</span> <a href="' + store.url + '" target="_blank" style="font-size:12px;">🔗</a>';
+        var controls = document.createElement('span');
+        controls.style.cssText = 'margin-left:auto; display:flex; gap:4px;';
+        if (i > 0) {
+          var up = document.createElement('button');
+          up.textContent = '↑'; up.style.cssText = 'border:1px solid var(--divider);background:white;cursor:pointer;padding:2px 6px;border-radius:3px;';
+          up.addEventListener('click', function() { var t = storesData.stores[i]; storesData.stores[i] = storesData.stores[i-1]; storesData.stores[i-1] = t; renderStoresAdmin(); });
+          controls.appendChild(up);
+        }
+        if (i < storesData.stores.length - 1) {
+          var dn = document.createElement('button');
+          dn.textContent = '↓'; dn.style.cssText = 'border:1px solid var(--divider);background:white;cursor:pointer;padding:2px 6px;border-radius:3px;';
+          dn.addEventListener('click', function() { var t = storesData.stores[i]; storesData.stores[i] = storesData.stores[i+1]; storesData.stores[i+1] = t; renderStoresAdmin(); });
+          controls.appendChild(dn);
+        }
+        var rm = document.createElement('button');
+        rm.textContent = '✕'; rm.style.cssText = 'border:none;background:none;color:#ef4444;cursor:pointer;font-size:14px;';
+        rm.addEventListener('click', function() { storesData.stores.splice(i, 1); renderStoresAdmin(); });
+        controls.appendChild(rm);
+        li.appendChild(controls);
+        allList.appendChild(li);
+      });
+    }
 
     function renderPaymentMethods() {
       pmContainer.innerHTML = '';
@@ -388,10 +529,26 @@
           paymentMethods = { 'Cash': true, 'Venmo': true, 'Paypal': true, 'Credit Card': true, 'Wire transfer(Korean bank)': true };
           renderPaymentMethods();
         }
+
+        // Load stores
+        var storesItem = data ? data.find(function(item) { return item.id === 'recommended_stores'; }) : null;
+        if (storesItem) {
+          try {
+            storesData = JSON.parse(storesItem.content);
+            if (!storesData.categories) storesData.categories = ['E-commerce', 'Beauty', 'Fashion', 'Food & Grocery', 'Pet', 'Lifestyle', 'Electronics'];
+            if (!storesData.featured) storesData.featured = [];
+            if (!storesData.stores) storesData.stores = [];
+          } catch(e) {
+            console.warn('Stores parse error, using defaults');
+          }
+        }
+        renderStoresAdmin();
+
       } catch(err) {
         console.error('Load error:', err);
         paymentMethods = { 'Cash': true, 'Venmo': true, 'Paypal': true, 'Credit Card': true, 'Wire transfer(Korean bank)': true };
         renderPaymentMethods();
+        renderStoresAdmin();
       }
 
       // Closed checkbox → disable time inputs
@@ -429,6 +586,51 @@
     });
 
     // Add Custom Payment
+    // Add Category
+    document.getElementById('add-category-btn').addEventListener('click', function() {
+      var input = document.getElementById('new-category-input');
+      var val = input.value.trim();
+      if (val && storesData.categories.indexOf(val) === -1) {
+        storesData.categories.push(val);
+        input.value = '';
+        renderStoresAdmin();
+      }
+    });
+
+    // Add Featured Store
+    document.getElementById('add-featured-btn').addEventListener('click', function() {
+      var name = document.getElementById('feat-name').value.trim();
+      var url = document.getElementById('feat-url').value.trim();
+      var desc = document.getElementById('feat-desc').value.trim();
+      var cat = document.getElementById('feat-cat').value;
+      var logo = document.getElementById('feat-logo').value.trim();
+      if (name && url) {
+        storesData.featured.push({ name: name, url: url, desc: desc, category: cat, logo: logo || '' });
+        document.getElementById('feat-name').value = '';
+        document.getElementById('feat-url').value = '';
+        document.getElementById('feat-desc').value = '';
+        document.getElementById('feat-logo').value = '';
+        renderStoresAdmin();
+      }
+    });
+
+    // Add Store
+    document.getElementById('add-store-btn').addEventListener('click', function() {
+      var name = document.getElementById('store-name').value.trim();
+      var url = document.getElementById('store-url').value.trim();
+      var desc = document.getElementById('store-desc').value.trim();
+      var cat = document.getElementById('store-cat').value;
+      var logo = document.getElementById('store-logo').value.trim();
+      if (name && url) {
+        storesData.stores.push({ name: name, url: url, desc: desc, category: cat, logo: logo || '' });
+        document.getElementById('store-name').value = '';
+        document.getElementById('store-url').value = '';
+        document.getElementById('store-desc').value = '';
+        document.getElementById('store-logo').value = '';
+        renderStoresAdmin();
+      }
+    });
+
     document.getElementById('add-payment-btn').addEventListener('click', function() {
       var input = document.getElementById('new-payment-input');
       var val = input.value.trim();
@@ -464,6 +666,7 @@
 
       var hoursJson = JSON.stringify({ regular: regular, holidays: holidays });
       var paymentJson = JSON.stringify(paymentMethods);
+      var storesJson = JSON.stringify(storesData);
 
       // Helper: update existing row, or insert if not found
       async function saveRow(client, id, content) {
@@ -479,10 +682,12 @@
 
       var r1 = await saveRow(client, 'business_hours', hoursJson);
       var r2 = await saveRow(client, 'payment_method', paymentJson);
+      var r3 = await saveRow(client, 'recommended_stores', storesJson);
 
-      if (r1.error || r2.error) {
+      if (r1.error || r2.error || r3.error) {
+        var errMsg = (r1.error ? r1.error.message : '') || (r2.error ? r2.error.message : '') || (r3.error ? r3.error.message : '');
         statusText.style.color = 'red';
-        statusText.innerText = 'Error: ' + (r1.error ? r1.error.message : r2.error.message);
+        statusText.innerText = 'Error: ' + errMsg;
       } else {
         statusText.style.color = 'green';
         statusText.innerText = '✅ Changes saved successfully!';

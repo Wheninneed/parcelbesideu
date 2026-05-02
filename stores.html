@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recommended Korean Stores — Parcel Beside U</title>
+  <meta name="description" content="Browse popular Korean online shopping malls. We can order from any of these stores on your behalf." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  
+  <header>
+    <div class="header-container">
+      <a href="index.html" class="logo">📦 Parcel beside U</a>
+      <button class="hamburger">☰</button>
+      <nav class="nav-links">
+        <a href="stores.html">Stores</a>
+        <a href="about.html">About Us</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <a href="index.html" class="page-link" style="display:inline-block; margin-bottom: 24px;">← Back to Home</a>
+
+    <h1 class="page-title">🛍️ Recommended Korean Stores</h1>
+    <p class="page-description">Not sure where to shop? Browse popular Korean shopping malls below. We can order from any of these stores on your behalf!</p>
+
+    <hr />
+
+    <!-- Featured Stores -->
+    <p class="service-section-title">⭐ Featured Stores</p>
+    <div class="featured-scroll" id="featured-stores-container">
+      <p style="color: var(--text-gray);">Loading...</p>
+    </div>
+
+    <hr />
+
+    <!-- All Stores by Category -->
+    <p class="service-section-title">🏷️ Browse by Category</p>
+    <div class="category-tabs" id="category-tabs-container"></div>
+    <div class="store-grid" id="all-stores-container">
+      <p style="color: var(--text-gray);">Loading...</p>
+    </div>
+
+    <div class="footer-nav">
+      <a href="index.html" class="footer-link">Home</a>
+      <a href="https://www.facebook.com/parcelbesideu" target="_blank" class="footer-link">Facebook</a>
+      <a href="https://www.instagram.com/parcelbesideu/" target="_blank" class="footer-link">Instagram</a>
+    </div>
+  </main>
+
+  <script src="app.js?v=4"></script>
+</body>
+</html>

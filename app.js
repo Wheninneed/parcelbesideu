@@ -20,7 +20,15 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
   var paymentMethodDisplay = document.getElementById('payment-method-content');
   var holidayAlertContainer = document.getElementById('holiday-alert-container');
 
-  if (!businessHoursDisplay && !paymentMethodDisplay) return;
+  // Stores page elements
+  var featuredStoresContainer = document.getElementById('featured-stores-container');
+  var allStoresContainer = document.getElementById('all-stores-container');
+  var categoryTabsContainer = document.getElementById('category-tabs-container');
+
+  var needsMainData = businessHoursDisplay || paymentMethodDisplay;
+  var needsStoresData = featuredStoresContainer || allStoresContainer;
+
+  if (!needsMainData && !needsStoresData) return;
 
   if (!window.supabase) {
     console.error('Supabase CDN not loaded');
@@ -193,24 +201,133 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
         }
       }
     });
+
+    // === STORES PAGE ===
+    if (needsStoresData) {
+      var storesItem = data.find(function(item) { return item.id === 'recommended_stores'; });
+      if (storesItem) {
+        try {
+          var storesData = JSON.parse(storesItem.content);
+          renderStores(storesData);
+        } catch(e) {
+          console.error('Stores parse error:', e);
+        }
+      } else {
+        if (featuredStoresContainer) featuredStoresContainer.innerHTML = '<p style="color:var(--text-gray)">No stores added yet. Add stores in the admin dashboard.</p>';
+        if (allStoresContainer) allStoresContainer.innerHTML = '';
+      }
+    }
   }).catch(function(err) {
     console.error('Network error:', err);
   });
-})();
 
-// Global function for copying text to clipboard
-window.copyAddress = function(elementId, btn) {
-  var text = document.getElementById(elementId).innerText;
-  navigator.clipboard.writeText(text).then(function() {
-    var originalText = btn.innerText;
-    btn.innerText = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(function() {
-      btn.innerText = originalText;
-      btn.classList.remove('copied');
-    }, 2000);
-  }).catch(function(err) {
-    console.error('Failed to copy: ', err);
-    alert('Failed to copy address.');
-  });
-};
+  // === STORE RENDERING FUNCTIONS ===
+  function getLogoUrl(store) {
+    if (store.logo) return store.logo;
+    try {
+      var domain = new URL(store.url).hostname;
+      return 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
+    } catch(e) {
+      return '';
+    }
+  }
+
+  function createStoreCard(store, isFeatured) {
+    var a = document.createElement('a');
+    a.href = store.url;
+    a.target = '_blank';
+    a.className = 'store-card' + (isFeatured ? ' featured' : '');
+
+    var logoWrap = document.createElement('div');
+    logoWrap.className = 'store-logo-wrap';
+    var img = document.createElement('img');
+    img.src = getLogoUrl(store);
+    img.alt = store.name;
+    img.onerror = function() { this.style.display = 'none'; };
+    logoWrap.appendChild(img);
+
+    var info = document.createElement('div');
+    info.className = 'store-info';
+    var name = document.createElement('div');
+    name.className = 'store-name';
+    name.textContent = store.name;
+    var desc = document.createElement('div');
+    desc.className = 'store-desc';
+    desc.textContent = store.desc || '';
+    info.appendChild(name);
+    info.appendChild(desc);
+
+    if (store.category) {
+      var tag = document.createElement('span');
+      tag.className = 'store-tag';
+      tag.textContent = store.category;
+      info.appendChild(tag);
+    }
+
+    a.appendChild(logoWrap);
+    a.appendChild(info);
+    return a;
+  }
+
+  function renderStores(storesData) {
+    // Featured
+    if (featuredStoresContainer && storesData.featured) {
+      featuredStoresContainer.innerHTML = '';
+      storesData.featured.forEach(function(store) {
+        featuredStoresContainer.appendChild(createStoreCard(store, true));
+      });
+      if (storesData.featured.length === 0) {
+        featuredStoresContainer.innerHTML = '<p style="color:var(--text-gray)">No featured stores yet.</p>';
+      }
+    }
+
+    // Categories + All Stores
+    var allStores = storesData.stores || [];
+    var categories = storesData.categories || [];
+
+    if (categoryTabsContainer) {
+      categoryTabsContainer.innerHTML = '';
+      // "All" tab
+      var allTab = document.createElement('button');
+      allTab.className = 'category-tab active';
+      allTab.textContent = 'All';
+      allTab.addEventListener('click', function() { filterStores('All'); });
+      categoryTabsContainer.appendChild(allTab);
+
+      categories.forEach(function(cat) {
+        var btn = document.createElement('button');
+        btn.className = 'category-tab';
+        btn.textContent = cat;
+        btn.addEventListener('click', function() { filterStores(cat); });
+        categoryTabsContainer.appendChild(btn);
+      });
+    }
+
+    function filterStores(category) {
+      // Update active tab
+      if (categoryTabsContainer) {
+        var tabs = categoryTabsContainer.querySelectorAll('.category-tab');
+        tabs.forEach(function(t) { t.classList.remove('active'); });
+        tabs.forEach(function(t) {
+          if (t.textContent === category) t.classList.add('active');
+        });
+      }
+
+      if (!allStoresContainer) return;
+      allStoresContainer.innerHTML = '';
+
+      var filtered = category === 'All' ? allStores : allStores.filter(function(s) { return s.category === category; });
+
+      if (filtered.length === 0) {
+        allStoresContainer.innerHTML = '<p style="color:var(--text-gray)">No stores in this category yet.</p>';
+        return;
+      }
+
+      filtered.forEach(function(store) {
+        allStoresContainer.appendChild(createStoreCard(store, false));
+      });
+    }
+
+    filterStores('All');
+  }
+})();
