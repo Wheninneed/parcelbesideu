@@ -331,3 +331,22 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     filterStores('All');
   }
 })();
+
+// Global function for copying text to clipboard
+window.copyAddress = function(elementId, btn) {
+  var el = document.getElementById(elementId);
+  if (!el) return;
+  var text = el.innerText;
+  navigator.clipboard.writeText(text).then(function() {
+    var originalText = btn.innerText;
+    btn.innerText = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.innerText = originalText;
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(function(err) {
+    console.error('Failed to copy: ', err);
+    alert('Failed to copy address.');
+  });
+};
