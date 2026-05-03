@@ -55,12 +55,31 @@
     <hr />
 
     <h2>Our Office Address</h2>
-    <div style="background: var(--bg-hover); padding: 20px 24px; border-radius: 8px; margin: 16px 0;">
-      <p style="font-size: 17px; margin: 0; line-height: 1.7;">
+    <div style="background: var(--bg-hover); padding: 20px 24px; border-radius: 8px; margin: 16px 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+      <p style="font-size: 17px; margin: 0; line-height: 1.7;" id="office-address">
         경기도 평택시 고덕동 253-4 2층<br/>
-        <span style="color: var(--text-gray);">253-4, Godeok-dong, 2F, Pyeongtaek-si, Gyeonggi-do, South Korea</span>
+        <span style="color: var(--text-gray); font-size: 14px;">253-4, Godeok-dong, 2F, Pyeongtaek-si, Gyeonggi-do, South Korea</span>
       </p>
+      <button onclick="copyAddress()" class="btn" style="padding: 8px 16px; font-size: 14px; white-space: nowrap;" id="copy-btn">📋 Copy</button>
     </div>
+
+    <script>
+      function copyAddress() {
+        var addr = "경기도 평택시 고덕동 253-4 2층";
+        navigator.clipboard.writeText(addr).then(function() {
+          var btn = document.getElementById('copy-btn');
+          var originalText = btn.innerHTML;
+          btn.innerHTML = "✅ Copied!";
+          btn.style.background = "#22c55e";
+          btn.style.borderColor = "#22c55e";
+          setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.style.background = "";
+            btn.style.borderColor = "";
+          }, 2000);
+        });
+      }
+    </script>
 
     <div class="footer-nav">
       <a href="index.html" class="footer-link">Home</a>
