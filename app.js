@@ -350,6 +350,55 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
     filterStores('All');
   }
+  // === FAQ RENDERING FUNCTIONS ===
+  function renderFaqs(faqList) {
+    if (!faqContainer) return;
+    faqContainer.innerHTML = '';
+    
+    if (!faqList || faqList.length === 0) {
+      faqContainer.innerHTML = '<p style="color:var(--text-gray)">No FAQs added yet.</p>';
+      return;
+    }
+
+    faqList.forEach(function(faq, index) {
+      var itemDiv = document.createElement('div');
+      itemDiv.className = 'faq-item';
+
+      var questionBtn = document.createElement('button');
+      questionBtn.className = 'faq-question';
+      questionBtn.innerHTML = 
+        '<div class="faq-q-icon">Q</div>' +
+        '<div class="faq-question-text">' + faq.question + '</div>' +
+        '<div class="faq-toggle-icon">▼</div>';
+
+      var answerDiv = document.createElement('div');
+      answerDiv.className = 'faq-answer';
+      
+      var answerInner = document.createElement('div');
+      answerInner.className = 'faq-answer-inner';
+      answerInner.innerHTML = 
+        '<div class="faq-a-icon">A</div>' +
+        '<div class="faq-answer-content">' + faq.answer + '</div>';
+        
+      answerDiv.appendChild(answerInner);
+
+      questionBtn.addEventListener('click', function() {
+        var isActive = itemDiv.classList.contains('active');
+        // Close all others
+        var allItems = faqContainer.querySelectorAll('.faq-item');
+        allItems.forEach(function(el) { el.classList.remove('active'); });
+        
+        // Toggle current
+        if (!isActive) {
+          itemDiv.classList.add('active');
+        }
+      });
+
+      itemDiv.appendChild(questionBtn);
+      itemDiv.appendChild(answerDiv);
+      faqContainer.appendChild(itemDiv);
+    });
+  }
 })();
 
 // Global function for copying text to clipboard
