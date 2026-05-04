@@ -25,10 +25,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
   var allStoresContainer = document.getElementById('all-stores-container');
   var categoryTabsContainer = document.getElementById('category-tabs-container');
 
+  // FAQ page elements
+  var faqContainer = document.getElementById('faq-container');
+
   var needsMainData = businessHoursDisplay || paymentMethodDisplay;
   var needsStoresData = featuredStoresContainer || allStoresContainer;
+  var needsFaqData = faqContainer;
 
-  if (!needsMainData && !needsStoresData) return;
+  if (!needsMainData && !needsStoresData && !needsFaqData) return;
 
   if (!window.supabase) {
     console.error('Supabase CDN not loaded');
@@ -215,6 +219,22 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
       } else {
         if (featuredStoresContainer) featuredStoresContainer.innerHTML = '<p style="color:var(--text-gray)">No stores added yet. Add stores in the admin dashboard.</p>';
         if (allStoresContainer) allStoresContainer.innerHTML = '';
+      }
+    }
+
+    // === FAQ PAGE ===
+    if (needsFaqData) {
+      var faqItem = data.find(function(item) { return item.id === 'faq'; });
+      if (faqItem) {
+        try {
+          var faqData = JSON.parse(faqItem.content);
+          renderFaqs(faqData);
+        } catch(e) {
+          console.error('FAQ parse error:', e);
+          faqContainer.innerHTML = '<p style="color:var(--text-gray)">Failed to load FAQs.</p>';
+        }
+      } else {
+        faqContainer.innerHTML = '<p style="color:var(--text-gray)">No FAQs added yet.</p>';
       }
     }
   }).catch(function(err) {
