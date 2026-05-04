@@ -225,9 +225,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     // === FAQ PAGE ===
     if (needsFaqData) {
       var faqItem = data.find(function(item) { return item.id === 'faq'; });
-      if (faqItem) {
+      if (faqItem && faqItem.content) {
         try {
-          var faqData = JSON.parse(faqItem.content);
+          var faqData = typeof faqItem.content === 'string' ? JSON.parse(faqItem.content) : faqItem.content;
           renderFaqs(faqData);
         } catch(e) {
           console.error('FAQ parse error:', e);
