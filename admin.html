@@ -221,7 +221,11 @@
           <input type="url" id="store-url" placeholder="https://..." style="width:180px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
           <input type="text" id="store-desc" placeholder="Short description" style="flex:1; min-width:120px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
           <select id="store-cat" style="padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;"></select>
-          <input type="url" id="store-logo" placeholder="Logo URL (optional)" style="width:160px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+          <div style="display:flex; gap:4px; align-items:center;">
+            <input type="url" id="store-logo" placeholder="Logo URL (optional)" style="width:140px; padding:6px; border:1px solid var(--divider); border-radius:4px; font-size:14px;" />
+            <input type="file" id="store-logo-file" accept="image/*" style="display:none;" />
+            <button type="button" id="upload-logo-btn" class="btn" style="padding:6px 10px; font-size:12px; background:#4b5563; white-space:nowrap;">Upload</button>
+          </div>
           <button id="add-store-btn" class="btn" style="padding:6px 14px; font-size:14px;" type="button">+ Add</button>
         </div>
       </div>
@@ -256,6 +260,7 @@
       categories: ['E-commerce', 'Beauty', 'Fashion', 'Food & Grocery', 'Pet', 'Lifestyle', 'Electronics']
     };
     let editingStoreIndex = -1;
+    let editingStoreOriginalName = '';
 
     // --- DOM refs ---
     const loginSection = document.getElementById('login-section');
@@ -438,6 +443,7 @@
         editBtn.textContent = '✏️'; editBtn.style.cssText = 'border:1px solid var(--divider);background:white;cursor:pointer;padding:2px 6px;border-radius:3px;';
         editBtn.addEventListener('click', function() {
           editingStoreIndex = i;
+          editingStoreOriginalName = store.name || '';
           document.getElementById('store-name').value = store.name || '';
           document.getElementById('store-url').value = store.url || '';
           document.getElementById('store-desc').value = store.desc || '';
@@ -452,7 +458,16 @@
         controls.appendChild(editBtn);
         var rm = document.createElement('button');
         rm.textContent = '✕'; rm.style.cssText = 'border:none;background:none;color:#ef4444;cursor:pointer;font-size:14px;';
-        rm.addEventListener('click', function() { storesData.stores.splice(i, 1); renderStoresAdmin(); });
+        rm.addEventListener('click', function() {
+          var storeName = storesData.stores[i].name;
+          storesData.stores.splice(i, 1);
+          if (storesData.featured) {
+            storesData.featured = storesData.featured.filter(function(f) {
+              return f.name !== storeName;
+            });
+          }
+          renderStoresAdmin();
+        });
         controls.appendChild(rm);
         li.appendChild(controls);
         allList.appendChild(li);
@@ -658,8 +673,21 @@
       if (name && url) {
         var obj = { name: name, url: url, desc: desc, category: cat, logo: logo || '' };
         if (editingStoreIndex >= 0) {
+          var oldName = editingStoreOriginalName || storesData.stores[editingStoreIndex].name;
           storesData.stores[editingStoreIndex] = obj;
+          
+          // Update corresponding featured store info
+          if (storesData.featured) {
+            storesData.featured = storesData.featured.map(function(f) {
+              if (f.name === oldName) {
+                return Object.assign({}, f, obj);
+              }
+              return f;
+            });
+          }
+          
           editingStoreIndex = -1;
+          editingStoreOriginalName = '';
           this.textContent = '+ Add';
           this.style.background = '';
           this.style.color = '';
@@ -671,6 +699,57 @@
         document.getElementById('store-desc').value = '';
         document.getElementById('store-logo').value = '';
         renderStoresAdmin();
+      }
+    });
+
+    // Logo Upload Logic
+    document.getElementById('upload-logo-btn').addEventListener('click', function() {
+      document.getElementById('store-logo-file').click();
+    });
+
+    document.getElementById('store-logo-file').addEventListener('change', async function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      var client = getDb();
+      if (!client) {
+        alert('Database connection not available.');
+        return;
+      }
+
+      var uploadBtn = document.getElementById('upload-logo-btn');
+      var originalText = uploadBtn.textContent;
+      uploadBtn.textContent = 'Uploading...';
+      uploadBtn.disabled = true;
+
+      try {
+        var fileExt = file.name.split('.').pop();
+        var fileName = 'logo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7) + '.' + fileExt;
+        var filePath = 'logos/' + fileName;
+
+        var { data, error } = await client.storage
+          .from('images')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        var { data: publicUrlData } = client.storage
+          .from('images')
+          .getPublicUrl(filePath);
+
+        var publicUrl = publicUrlData.publicUrl;
+        document.getElementById('store-logo').value = publicUrl;
+        alert('Image uploaded successfully!');
+      } catch (err) {
+        console.error('Upload error:', err);
+        alert('Upload failed: ' + err.message + '\n\nMake sure the "images" bucket exists in your Supabase storage and has public select/insert policies.');
+      } finally {
+        uploadBtn.textContent = originalText;
+        uploadBtn.disabled = false;
+        e.target.value = '';
       }
     });
 

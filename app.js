@@ -246,7 +246,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     if (store.logo) return store.logo;
     try {
       var domain = new URL(store.url).hostname;
-      return 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
+      domain = domain.replace(/^www\./, '');
+      return 'https://logos.hunter.io/' + domain;
     } catch(e) {
       return '';
     }
@@ -263,7 +264,20 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     var img = document.createElement('img');
     img.src = getLogoUrl(store);
     img.alt = store.name;
-    img.onerror = function() { this.style.display = 'none'; };
+    img.onerror = function() {
+      // If Hunter.io fails, fallback to Google Favicon API (as a 2nd safety net)
+      if (this.src.indexOf('logos.hunter.io') !== -1) {
+        try {
+          var domain = new URL(store.url).hostname;
+          this.src = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
+          this.classList.add('favicon-fallback');
+        } catch(e) {
+          this.style.display = 'none';
+        }
+      } else {
+        this.style.display = 'none';
+      }
+    };
     logoWrap.appendChild(img);
 
     var info = document.createElement('div');
@@ -293,8 +307,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     // Featured
     if (featuredStoresContainer && storesData.featured) {
       featuredStoresContainer.innerHTML = '';
-      storesData.featured.forEach(function(store) {
-        featuredStoresContainer.appendChild(createStoreCard(store, true));
+      storesData.featured.forEach(function(featuredStore) {
+        // Find latest store info from storesData.stores to keep them synced
+        var latestStore = (storesData.stores || []).find(function(s) {
+          return s.name === featuredStore.name;
+        });
+        var storeToRender = latestStore ? Object.assign({}, featuredStore, latestStore) : featuredStore;
+        featuredStoresContainer.appendChild(createStoreCard(storeToRender, true));
       });
       if (storesData.featured.length === 0) {
         featuredStoresContainer.innerHTML = '<p style="color:var(--text-gray)">No featured stores yet.</p>';

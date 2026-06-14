@@ -581,22 +581,34 @@ p, ul, ol {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f9f8f7;
-  padding: 16px;
+  background: #ffffff;
+  padding: 6px;
+  border-bottom: 1px solid var(--divider);
 }
 .store-card .store-logo-wrap img {
-  max-height: 56px;
-  max-width: 140px;
+  width: 95%;
+  height: 95%;
   object-fit: contain;
+}
+.store-card .store-logo-wrap img.favicon-fallback {
+  width: 32px !important;
+  height: 32px !important;
 }
 .store-card .store-info {
   padding: 14px 16px 16px;
   flex: 1;
 }
 .store-card .store-name {
-  font-size: 16px;
+  font-size: 21px;
   font-weight: 600;
   margin-bottom: 4px;
+}
+.service-section-title.featured-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text-main);
+  text-transform: none;
+  letter-spacing: normal;
 }
 .store-card .store-desc {
   font-size: 13px;
