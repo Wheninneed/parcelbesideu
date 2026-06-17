@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>택배 보관 서비스 가이드 — Parcel Beside U</title>
+  <meta name="description" content="받으실 택배가 있거나 온라인 주문이 필요하실 경우, 저희 사무실로 주문하세요. 의류, 생활용품, 책, 닭가슴살 등 모두 수령 가능합니다." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  
+  <header>
+    <div class="header-container">
+      <a href="index.html" class="logo">📦 Parcel beside U</a>
+      <button class="hamburger">☰</button>
+      <nav class="nav-links">
+        <a href="stores.html">추천 한국 상점</a>
+        <a href="faq.html">자주 묻는 질문</a>
+        <a href="about.html">소개</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <a href="index.html" class="page-link" style="display:inline-block; margin-bottom: 24px;">← 홈으로 돌아가기</a>
+
+    <h1 class="page-title">📦 택배 보관 서비스 (Package Holding)</h1>
+    <p class="page-description">받으실 택배가 있거나 온라인 주문이 필요하실 경우, 저희 사무실로 주문하세요.<br/>의류, 생활용품, 책, 닭가슴살 & 프로틴 등등 모두 수령 가능합니다!</p>
+
+    <div class="price-highlight">
+      <div class="price-main">₩10,000 또는 $7</div>
+      <div class="price-note">수령 1회당 최대 3개의 택배까지 포함됩니다. 4번째 택배부터는 개당 $1(또는 ₩1,500)의 추가 요금이 부과됩니다.</div>
+    </div>
+
+    <hr />
+
+    <h2>이용 방법</h2>
+    <ul class="step-list">
+      <li>
+        <div style="width: 100%;">
+          <strong>1. 주소 입력 및 주문하기</strong><br/>
+          배송지에 저희 사무실 주소를 기입해주세요.
+          
+          <div class="address-container-v2" style="margin-top: 24px;">
+            <!-- Korean Address -->
+            <div class="address-section" style="width: 100%;">
+              <div class="address-section-title">🇰🇷 한국어 주소 (Address in Korean)</div>
+              <div class="address-list">
+                <div class="address-row">
+                  <div class="address-row-label">주소</div>
+                  <div class="address-row-value" id="ko-combined-addr">경기 평택시 팽성읍 안정순환로 104번길 32, 1층 11호, Parcel beside U <span class="highlight-name">(수령인 성함)</span></div>
+                  <button class="icon-copy-btn" onclick="copyAddressKo('ko-combined-addr', this)">복사</button>
+                </div>
+                <div class="name-warning">
+                  🚨 주소에서 <span class="highlight-name">(수령인 성함)</span>으로 강조해놓은 부분에 반드시 수령하시는 분 성함을 적어주세요. '받는 사람' 정보를 택배사에서 마스킹처리하는 경우 누구 택배인지 저희가 식별하기 어렵기 때문에, 주소란에 수령인 성함을 적어주셔야 택배 도착안내를 드릴 수 있습니다.
+                </div>
+                <div class="address-row">
+                  <div class="address-row-label">우편번호 (Zip)</div>
+                  <div class="address-row-value" id="ko-zip">17983</div>
+                  <button class="icon-copy-btn" onclick="copyAddressKo('ko-zip', this)">복사</button>
+                </div>
+                <div class="address-row">
+                  <div class="address-row-label">전화번호 (Tel)</div>
+                  <div class="address-row-value" id="ko-tel">010-6749-1519</div>
+                  <button class="icon-copy-btn" onclick="copyAddressKo('ko-tel', this)">복사</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div style="width: 100%;">
+          <strong>2. 택배 정보 전송하기</strong><br/>
+          주문 완료 후 아래 양식을 복사하여 작성하신 뒤, 원하시는 연락 방법으로 저희에게 보내주세요.
+          
+          <div class="form-copy-box">
+            <div class="form-copy-content" id="order-form">1. 수령인 성함
+2. 연락처
+3. 주문하신 쇼핑몰 정보(개인택배일 경우 개인택배로 기입)</div>
+            <button class="form-copy-btn" onclick="copyAddressKo('order-form', this)">양식 복사하기</button>
+          </div>
+
+          <div class="contact-methods">
+            <p class="contact-methods-title">아래 3가지 방법 중 편하신 방법으로 양식을 보내주시면 됩니다:</p>
+            <div class="contact-method-links">
+              <a href="https://www.facebook.com/parcelbesideu/" target="_blank" class="contact-method-link">
+                <span class="icon">📘</span> Facebook Messenger (페이스북 메신저)
+              </a>
+              <a href="https://www.instagram.com/parcelbesideu" target="_blank" class="contact-method-link">
+                <span class="icon">📸</span> Instagram DM (인스타그램 DM)
+              </a>
+              <div class="contact-method-text">
+                <span class="icon">💬</span> 문자 메시지: <strong>010-6749-1519</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <strong>3. 택배 수령하기</strong><br/>
+          택배가 도착하면 문자/DM으로 안내드립니다. 영업시간 중에 방문하셔서 보관료 결제 후 택배를 수령해주세요.
+        </div>
+      </li>
+    </ul>
+
+    <div class="footer-nav">
+      <a href="index.html" class="footer-link">Home</a>
+      <a href="https://www.facebook.com/parcelbesideu" target="_blank" class="footer-link">Facebook</a>
+      <a href="https://www.instagram.com/parcelbesideu/" target="_blank" class="footer-link">Instagram</a>
+    </div>
+  </main>
+
+  <script src="app.js?v=3"></script>
+  <script>
+    // Localized copy function for Korean guide page
+    function copyAddressKo(elementId, btn) {
+      var el = document.getElementById(elementId);
+      if (!el) return;
+      var text = el.innerText;
+      navigator.clipboard.writeText(text).then(function() {
+        var originalText = btn.innerText;
+        btn.innerText = '복사 완료!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.innerText = originalText;
+          btn.classList.remove('copied');
+        }, 2000);
+      }).catch(function(err) {
+        console.error('Failed to copy: ', err);
+        alert('복사에 실패했습니다.');
+      });
+    }
+  </script>
+</body>
+</html>
