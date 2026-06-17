@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Templates Admin — Parcel Beside U</title>
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    .admin-container {
+      max-width: 1300px;
+      margin: 40px auto;
+      padding: 24px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .hidden { display: none !important; }
+    .btn {
+      background: var(--text-main);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #1a1a1a; }
+    .btn-secondary { background: var(--bg-hover); color: var(--text-main); }
+    .btn-secondary:hover { background: var(--divider); }
+    .btn-success { background: #10b981; }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-warning { background: #f59e0b; }
+    .btn-warning:hover { background: #d97706; }
+
+    /* Spreadsheet Tabs */
+    .sheet-tabs-container {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border-bottom: 2px solid var(--divider);
+      margin-bottom: 20px;
+      padding-bottom: 0px;
+      overflow-x: auto;
+    }
+    .sheet-tab {
+      padding: 8px 16px;
+      border: 1px solid var(--divider);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      background: #f9f8f7;
+      color: var(--text-gray);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: -2px;
+    }
+    .sheet-tab:hover {
+      background: var(--bg-hover);
+    }
+    .sheet-tab.active {
+      background: white;
+      color: var(--text-main);
+      border-top: 3px solid #10b981;
+      border-bottom: 2px solid white;
+      font-weight: 700;
+    }
+    .sheet-tab .delete-tab-btn {
+      color: #ef4444;
+      font-weight: bold;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 11px;
+      padding: 2px;
+      border-radius: 50%;
+      display: none;
+    }
+    .sheet-tab.active .delete-tab-btn {
+      display: inline-block;
+    }
+    .add-tab-btn {
+      padding: 6px 12px;
+      border: 1px dashed var(--divider);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      margin-left: 8px;
+      display: none;
+    }
+    .add-tab-btn:hover {
+      background: var(--bg-hover);
+    }
+
+    /* Spreadsheet Table Grid */
+    .sheet-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 15px;
+      text-align: left;
+      border: 1px solid #e2e8f0;
+    }
+    .sheet-table th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .sheet-table td {
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+      background: white;
+    }
+    .sheet-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Drag & Drop Styles (Edit mode only) */
+    .sheet-table tr.draggable-row {
+      cursor: grab;
+    }
+    .sheet-table tr.draggable-row:active {
+      cursor: grabbing;
+    }
+    .sheet-table tr.dragging {
+      opacity: 0.45;
+      background: #f0fdf4 !important;
+    }
+    .sheet-table tr.drag-over td {
+      background: #eff6ff !important;
+      border-top: 2px solid #3b82f6;
+      border-bottom: 2px solid #3b82f6;
+    }
+    
+    /* Copyable Content Cell */
+    .copyable-cell {
+      cursor: copy;
+      position: relative;
+      background: #fff;
+      transition: background-color 0.15s;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .copyable-cell:hover {
+      background-color: #f0fdf4 !important;
+      color: #166534;
+    }
+    .copyable-cell::after {
+      content: "📋 Click to Copy";
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      font-size: 11px;
+      background: rgba(16, 185, 129, 0.9);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      font-weight: 600;
+    }
+    .copyable-cell:hover::after {
+      opacity: 1;
+    }
+
+    /* Long Comment Box Toggle Style */
+    .expandable-comment {
+      cursor: pointer;
+      position: relative;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-all;
+      transition: color 0.15s;
+    }
+    .expandable-comment:hover {
+      color: #2563eb;
+    }
+    .expandable-comment.expanded {
+      display: block;
+      overflow: visible;
+      -webkit-line-clamp: unset;
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--divider);
+    }
+
+    /* Form Fields for Edit Mode */
+    .table-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .table-textarea {
+      width: 100%;
+      height: 100px;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    /* Actions Column */
+    .actions-cell {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      border: 1px solid var(--divider);
+      background: white;
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .action-btn:hover {
+      background: var(--bg-hover);
+    }
+    .action-btn.edit-row-btn { color: #3b82f6; }
+    .action-btn.delete-row-btn { color: #ef4444; }
+
+    /* Toast Notification */
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+      z-index: 9999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .toast-notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Edit Mode Header Switcher */
+    .mode-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body style="background: #f3f4f6;">
+
+  <div class="admin-container" id="login-section">
+    <h2>Templates Admin Login</h2>
+    <p style="margin-bottom: 20px; color: var(--text-gray);">Please log in to manage client response templates and addresses.</p>
+    <form onsubmit="return handleAdminLogin(event)" style="display: flex; flex-direction: column; gap: 12px; max-width: 300px;">
+      <input type="email" id="admin-email" placeholder="Email" required style="padding: 10px; border: 1px solid var(--divider); border-radius: 4px;" />
+      <input type="password" id="admin-password" placeholder="Password" required style="padding: 10px; border: 1px solid var(--divider); border-radius: 4px;" />
+      <button type="submit" class="btn">Log In</button>
+      <p id="login-error" style="font-size: 14px; margin-top: 8px;"></p>
+    </form>
+  </div>
+
+  <div class="admin-container hidden" id="dashboard-section">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--divider); padding-bottom: 16px;">
+      <h1 style="margin: 0; font-size: 24px;">📋 Customer Response Templates &amp; Addresses</h1>
+      <div style="display: flex; gap: 12px;">
+        <a href="admin-faq.html" class="btn btn-secondary" style="text-decoration: none;">💬 FAQ Management</a>
+        <a href="admin.html" class="btn btn-secondary" style="text-decoration: none;">Main Dashboard</a>
+      </div>
+    </div>
+
+    <!-- Mode bar (Edit Mode Toggle) -->
+    <div class="mode-bar">
+      <div>
+        <span style="font-weight: 700; color: #475569; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Status</span>
+        <span id="current-mode-badge" style="margin-left: 8px; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">📖 Read &amp; Copy Only</span>
+      </div>
+      <div>
+        <button class="btn btn-warning" id="toggle-edit-mode-btn" onclick="toggleEditMode()">✏️ Toggle Edit Mode</button>
+      </div>
+    </div>
+
+    <!-- Spreadsheet Tabs -->
+    <div class="sheet-tabs-container">
+      <div id="tabs-list" style="display: flex; gap: 4px;"></div>
+      <button class="add-tab-btn" id="add-tab-btn" onclick="addNewSheetTab()">+ Add Tab</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center; max-width: 450px;">
+      <div style="position: relative; flex: 1;">
+        <input type="text" id="search-input" placeholder="🔍 대분류 / 항목명 / 본문 키워드 검색..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--divider); border-radius: 6px; font-size: 14px; font-family: inherit; box-sizing: border-box;" oninput="handleSearch(this.value)" />
+      </div>
+      <button class="btn btn-secondary" onclick="clearSearch()" id="clear-search-btn" style="padding: 10px 16px; font-size: 14px; display: none;">Clear</button>
+    </div>
+
+    <!-- Spreadsheet Table Grid -->
+    <div style="overflow-x: auto; background: white; border-radius: 6px; border: 1px solid #cbd5e1;">
+      <table class="sheet-table" id="data-table">
+        <thead id="table-header">
+          <!-- Dynamically populated depending on sheet_name -->
+        </thead>
+        <tbody id="template-table-body">
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 32px; color: var(--text-gray);">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add row section (Edit mode only) -->
+    <div style="margin-top: 16px; display: flex; justify-content: flex-end;" id="add-row-container" class="hidden">
+      <button class="btn btn-success" onclick="addNewTemplateRow()">➕ Add Row</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification element -->
+  <div class="toast-notification" id="copy-toast">
+    Copied! 📋
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
+
+    let db = null;
+    let templates = [];
+    let activeSheet = 'Sheet1';
+    let isEditMode = false;
+    let editingRowId = null; // ID of the template row currently being inline-edited
+    let searchQuery = '';
+    let draggedRow = null; // Reference to the row currently being dragged
+
+    function getDb() {
+      if (!db && window.supabase) {
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+      return db;
+    }
+
+    // Dom Loading Check
+    document.addEventListener("DOMContentLoaded", function() {
+      // Auto-login check
+      const client = getDb();
+      if (client) {
+        client.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            loadTemplates();
+          }
+        });
+      }
+    });
+
+    // Login logic
+    window.handleAdminLogin = async function(e) {
+      if (e) e.preventDefault();
+      const email = document.getElementById('admin-email').value;
+      const password = document.getElementById('admin-password').value;
+      const errorMsg = document.getElementById('login-error');
+
+      const client = getDb();
+      if (!client) {
+        errorMsg.style.color = 'red';
+        errorMsg.innerText = '인터넷 접속 문제로 라이브러리가 로드되지 않았습니다.';
+        return false;
+      }
+
+      errorMsg.style.color = '#eab308';
+      errorMsg.innerText = '로그인 중입니다. 잠시만 기다려주세요...';
+
+      try {
+        const { data, error } = await client.auth.signInWithPassword({ email, password });
+        if (error) {
+          errorMsg.style.color = 'red';
+          errorMsg.innerText = '로그인 실패: ' + error.message;
+        } else {
+          errorMsg.innerText = '';
+          document.getElementById('login-section').classList.add('hidden');
+          document.getElementById('dashboard-section').classList.remove('hidden');
+          loadTemplates();
+        }
+      } catch (err) {
+        errorMsg.style.color = 'red';
+        errorMsg.innerText = '오류 발생: ' + err.message;
+      }
+      return false;
+    };
+
+    // Load templates from Supabase
+    async function loadTemplates() {
+      const client = getDb();
+      try {
+        const { data, error } = await client
+          .from('message_templates')
+          .select('*')
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        templates = data || [];
+        
+        // Render tabs & table grid
+        renderTabs();
+        renderTable();
+      } catch (err) {
+        console.error("Error loading templates:", err);
+        alert("Failed to load templates: " + err.message);
+      }
+    }
+
+    // Render sheet tabs
+    function renderTabs() {
+      // Get unique sheet names
+      let sheetNames = [...new Set(templates.map(t => t.sheet_name))];
+      
+      // If empty, default to Sheet1
+      if (sheetNames.length === 0) {
+        sheetNames = ['Sheet1'];
+      }
+
+      // Ensure activeSheet is in the sheetNames list
+      if (!sheetNames.includes(activeSheet)) {
+        activeSheet = sheetNames[0];
+      }
+
+      const tabsList = document.getElementById('tabs-list');
+      tabsList.innerHTML = '';
+
+      sheetNames.forEach(name => {
+        const tabEl = document.createElement('div');
+        tabEl.className = `sheet-tab ${name === activeSheet ? 'active' : ''}`;
+        tabEl.innerHTML = `
+          <span onclick="switchSheet('${name}')">${name}</span>
+          <button class="delete-tab-btn" onclick="deleteSheetTab('${name}', event)">✕</button>
+        `;
+        tabsList.appendChild(tabEl);
+      });
+
+      // Show/hide delete/add tab buttons depending on Edit mode
+      const deleteTabButtons = document.querySelectorAll('.delete-tab-btn');
+      const addTabBtn = document.getElementById('add-tab-btn');
+
+      deleteTabButtons.forEach(btn => {
+        btn.style.display = isEditMode ? 'inline-block' : 'none';
+      });
+      addTabBtn.style.display = isEditMode ? 'inline-block' : 'none';
+    }
+
+    // Switch active tab
+    window.switchSheet = function(sheetName) {
+      if (editingRowId !== null) {
+        if (!confirm("You are currently editing a row. Switching sheets will discard unsaved changes. Proceed?")) {
+          return;
+        }
+        editingRowId = null;
+      }
+      activeSheet = sheetName;
+      renderTabs();
+      renderTable();
+    };
+
+    // Render table header based on active sheet
+    function renderTableHeader() {
+      const thead = document.getElementById('table-header');
+      thead.innerHTML = '';
+      const tr = document.createElement('tr');
+
+      if (activeSheet === '주소') {
+        tr.innerHTML = `
+          <th style="width: 15%;">고객이름</th>
+          <th style="width: 25%;">주소</th>
+          <th style="width: 10%;">Zip code</th>
+          <th style="width: 12%;">도,시</th>
+          <th style="width: 12%;">연락처</th>
+          <th style="width: 10%;">공동현관</th>
+          <th style="width: 16%;">비고 (코멘트)</th>
+          <th style="width: 10%;" class="actions-header hidden">Actions</th>
+        `;
+      } else {
+        tr.innerHTML = `
+          <th style="width: 20%;">대분류 (Category)</th>
+          <th style="width: 25%;">항목명 (Title)</th>
+          <th style="width: 45%;">안내 멘트 템플릿 (Click to Copy)</th>
+          <th style="width: 10%;" class="actions-header hidden">Actions</th>
+        `;
+      }
+      thead.appendChild(tr);
+
+      // Handle Edit Mode Headers toggle visibility
+      const actionsHeaders = document.querySelectorAll('.actions-header');
+      actionsHeaders.forEach(th => {
+        if (isEditMode) th.classList.remove('hidden');
+        else th.classList.add('hidden');
+      });
+    }
+
+    // Parse Address JSON string safely
+    function parseAddressContent(content) {
+      try {
+        const parsed = JSON.parse(content);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            address: parsed.address || '',
+            zip_code: parsed.zip_code || '',
+            city: parsed.city || '',
+            phone: parsed.phone || '',
+            gate_code: parsed.gate_code || '',
+            comment: parsed.comment || ''
+          };
+        }
+      } catch (e) {
+        // Fallback for plain text legacy data
+      }
+      return {
+        address: content || '',
+        zip_code: '',
+        city: '',
+        phone: '',
+        gate_code: '',
+        comment: ''
+      };
+    }
+
+    // Render table rows
+    function renderTable() {
+      renderTableHeader();
+      const tbody = document.getElementById('template-table-body');
+      tbody.innerHTML = '';
+
+      // Filter templates for current active sheet
+      let filtered = templates.filter(t => t.sheet_name === activeSheet);
+
+      // Apply search query filter if exists (only filter active sheet templates)
+      if (searchQuery) {
+        filtered = filtered.filter(t => {
+          const categoryMatch = t.category && t.category.toLowerCase().includes(searchQuery);
+          const titleMatch = t.title && t.title.toLowerCase().includes(searchQuery);
+          
+          if (activeSheet === '주소') {
+            const addr = parseAddressContent(t.content);
+            return titleMatch || 
+                   categoryMatch ||
+                   addr.address.toLowerCase().includes(searchQuery) ||
+                   addr.zip_code.toLowerCase().includes(searchQuery) ||
+                   addr.city.toLowerCase().includes(searchQuery) ||
+                   addr.phone.toLowerCase().includes(searchQuery) ||
+                   addr.gate_code.toLowerCase().includes(searchQuery) ||
+                   addr.comment.toLowerCase().includes(searchQuery);
+          } else {
+            const contentMatch = t.content && t.content.toLowerCase().includes(searchQuery);
+            return titleMatch || categoryMatch || contentMatch;
+          }
+        });
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${activeSheet === '주소' ? (isEditMode ? 8 : 7) : (isEditMode ? 4 : 3)}" style="text-align: center; padding: 32px; color: var(--text-gray);">
+              ${searchQuery ? 'No data matches your search.' : 'No rows in this sheet. ' + (isEditMode ? 'Click "+ Add Row" below to create one.' : '')}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (activeSheet === '주소') {
+        // === RENDER ADDRESS SHETT (Grouped by Category/Building) ===
+        // Grouping logic
+        let grouped = {};
+        let groupOrder = [];
+
+        filtered.forEach(item => {
+          let gName = (item.category || '').trim();
+          if (!gName) gName = '개별 주소';
+
+          if (!grouped[gName]) {
+            grouped[gName] = [];
+            groupOrder.push(gName);
+          }
+          grouped[gName].push(item);
+        });
+
+        // Loop over building groups
+        groupOrder.forEach(gName => {
+          // If group is not '개별 주소', draw a yellow grouping header row
+          if (gName !== '개별 주소') {
+            const groupHeaderTr = document.createElement('tr');
+            if (isEditMode) {
+              groupHeaderTr.innerHTML = `
+                <td colspan="8" style="font-weight: 800; font-size: 15px; color: #854d0e; padding: 8px 14px; background: #fef08a !important; border-bottom: 2px solid #e2e8f0;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span>🏢 ${escapeHtml(gName)}</span>
+                    <div style="display: flex; gap: 6px;">
+                      <button class="action-btn" onclick="renameAddressGroup('${escapeJsString(gName)}')" style="padding: 2px 8px; font-size: 11px; background: white; font-weight: 600;">✏️ Rename</button>
+                      <button class="action-btn delete-row-btn" onclick="deleteAddressGroup('${escapeJsString(gName)}')" style="padding: 2px 8px; font-size: 11px; background: white; font-weight: 600;">❌ Delete Group</button>
+                    </div>
+                  </div>
+                </td>
+              `;
+            } else {
+              groupHeaderTr.innerHTML = `
+                <td colspan="7" style="font-weight: 800; font-size: 15px; color: #854d0e; padding: 10px 14px; background: #fef08a !important; border-bottom: 2px solid #e2e8f0;">
+                  🏢 ${escapeHtml(gName)}
+                </td>
+              `;
+            }
+            tbody.appendChild(groupHeaderTr);
+          }
+
+          // Draw group items
+          grouped[gName].forEach((item, index) => {
+            const tr = document.createElement('tr');
+
+            // Drag and Drop (Only when not editing inline)
+            if (isEditMode && editingRowId !== item.id) {
+              tr.draggable = true;
+              tr.classList.add('draggable-row');
+              tr.dataset.id = item.id;
+              
+              tr.addEventListener('dragstart', handleDragStart);
+              tr.addEventListener('dragover', handleDragOver);
+              tr.addEventListener('dragleave', handleDragLeave);
+              tr.addEventListener('drop', handleDrop);
+              tr.addEventListener('dragend', handleDragEnd);
+            }
+
+            if (isEditMode && editingRowId === item.id) {
+              // Address Edit Mode Form
+              const addr = parseAddressContent(item.content);
+              tr.innerHTML = `
+                <td>
+                  <input type="text" class="table-input" id="edit-addr-name" value="${escapeHtml(item.title || '')}" placeholder="고객이름" style="margin-bottom:4px;" />
+                  <input type="text" class="table-input" id="edit-addr-group" value="${escapeHtml(item.category || '')}" placeholder="건물/그룹명" />
+                </td>
+                <td><input type="text" class="table-input" id="edit-addr-address" value="${escapeHtml(addr.address)}" placeholder="주소" /></td>
+                <td><input type="text" class="table-input" id="edit-addr-zip" value="${escapeHtml(addr.zip_code)}" placeholder="Zip code" /></td>
+                <td><input type="text" class="table-input" id="edit-addr-city" value="${escapeHtml(addr.city)}" placeholder="도,시" /></td>
+                <td><input type="text" class="table-input" id="edit-addr-phone" value="${escapeHtml(addr.phone)}" placeholder="연락처" /></td>
+                <td><input type="text" class="table-input" id="edit-addr-gate" value="${escapeHtml(addr.gate_code)}" placeholder="공동현관" /></td>
+                <td><textarea class="table-textarea" id="edit-addr-comment" placeholder="비고(코멘트)">${escapeHtml(addr.comment)}</textarea></td>
+                <td class="actions-cell">
+                  <button class="action-btn" onclick="saveAddressInlineEdit(${item.id})" style="background: #10b981; color: white;">Save</button>
+                  <button class="action-btn" onclick="cancelInlineEdit()">Cancel</button>
+                </td>
+              `;
+            } else {
+              // Address Read-only/Copy row
+              const addr = parseAddressContent(item.content);
+              tr.innerHTML = `
+                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(item.title)}')">${escapeHtml(item.title)}</td>
+                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.address)}')">${escapeHtml(addr.address)}</td>
+                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.zip_code)}')">${escapeHtml(addr.zip_code)}</td>
+                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.city)}')">${escapeHtml(addr.city)}</td>
+                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.phone)}')">${escapeHtml(addr.phone)}</td>
+                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.gate_code)}')">${escapeHtml(addr.gate_code)}</td>
+                <td>
+                  <div class="expandable-comment" onclick="toggleCommentExpand(this)">${escapeHtml(addr.comment).replace(/\n/g, '<br>')}</div>
+                </td>
+                ${isEditMode ? `
+                  <td class="actions-cell">
+                    <span style="font-size:16px; color:#94a3b8; cursor:grab; padding: 4px; user-select:none; margin-right: 4px;">☰</span>
+                    <button class="action-btn edit-row-btn" onclick="startInlineEdit(${item.id})">✏️</button>
+                    <button class="action-btn delete-row-btn" onclick="deleteTemplateRow(${item.id})">❌</button>
+                  </td>
+                ` : ''}
+              `;
+            }
+            tbody.appendChild(tr);
+          });
+        });
+
+      } else {
+        // === RENDER NORMAL TEMPLATES SHETT ===
+        filtered.forEach((item, index) => {
+          const tr = document.createElement('tr');
+          
+          // Drag and Drop (Only when not editing inline)
+          if (isEditMode && editingRowId !== item.id) {
+            tr.draggable = true;
+            tr.classList.add('draggable-row');
+            tr.dataset.id = item.id;
+            
+            tr.addEventListener('dragstart', handleDragStart);
+            tr.addEventListener('dragover', handleDragOver);
+            tr.addEventListener('dragleave', handleDragLeave);
+            tr.addEventListener('drop', handleDrop);
+            tr.addEventListener('dragend', handleDragEnd);
+          }
+
+          if (isEditMode && editingRowId === item.id) {
+            // Normal Template Edit Form
+            tr.innerHTML = `
+              <td><input type="text" class="table-input" id="edit-category" value="${escapeHtml(item.category || '')}" placeholder="예: 배달 진행상황" /></td>
+              <td><input type="text" class="table-input" id="edit-title" value="${escapeHtml(item.title || '')}" placeholder="예: 택배 발송" /></td>
+              <td><textarea class="table-textarea" id="edit-content" placeholder="템플릿 멘트 본문">${escapeHtml(item.content || '')}</textarea></td>
+              <td class="actions-cell">
+                <button class="action-btn" onclick="saveInlineEdit(${item.id})" style="background: #10b981; color: white;">Save</button>
+                <button class="action-btn" onclick="cancelInlineEdit()">Cancel</button>
+              </td>
+            `;
+          } else {
+            // Normal Template View Row
+            let contentHtml = escapeHtml(item.content || '').replace(/\n/g, '<br>');
+
+            tr.innerHTML = `
+              <td style="font-weight: 600; color: #475569;">${escapeHtml(item.category || '')}</td>
+              <td style="font-weight: 500;">${escapeHtml(item.title || '')}</td>
+              <td class="copyable-cell" onclick="copyTemplateText(\`${escapeJsString(item.content)}\`)">${contentHtml}</td>
+              ${isEditMode ? `
+                <td class="actions-cell">
+                  <span style="font-size:16px; color:#94a3b8; cursor:grab; padding: 4px; user-select:none; margin-right: 4px;">☰</span>
+                  <button class="action-btn edit-row-btn" onclick="startInlineEdit(${item.id})">✏️</button>
+                  <button class="action-btn delete-row-btn" onclick="deleteTemplateRow(${item.id})">❌</button>
+                </td>
+              ` : ''}
+            `;
+          }
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    // Comment click expand/collapse toggle
+    window.toggleCommentExpand = function(el) {
+      if (isEditMode) return;
+      el.classList.toggle('expanded');
+    };
+
+    // Toggle Edit Mode Switcher
+    window.toggleEditMode = function() {
+      if (editingRowId !== null) {
+        if (!confirm("You have unsaved edits. Toggling edit mode will discard changes. Proceed?")) {
+          return;
+        }
+        editingRowId = null;
+      }
+      isEditMode = !isEditMode;
+      
+      const badge = document.getElementById('current-mode-badge');
+      const addRowContainer = document.getElementById('add-row-container');
+
+      if (isEditMode) {
+        badge.innerText = "✏️ Edit Mode Active";
+        badge.style.background = "#fef2f2";
+        badge.style.color = "#b91c1c";
+        addRowContainer.classList.remove('hidden');
+      } else {
+        badge.innerText = "📖 Read & Copy Only";
+        badge.style.background = "#e0f2fe";
+        badge.style.color = "#0369a1";
+        addRowContainer.classList.add('hidden');
+      }
+
+      renderTabs();
+      renderTable();
+    };
+
+    // Copy text to Clipboard
+    window.copyTemplateText = function(text) {
+      if (isEditMode) return; // Prevent copying while in edit mode
+
+      navigator.clipboard.writeText(text).then(function() {
+        showToastNotification("Copied to Clipboard! 📋");
+      }).catch(function(err) {
+        console.error("Copy failed:", err);
+      });
+    };
+
+    // Show toast message
+    function showToastNotification(message) {
+      const toast = document.getElementById('copy-toast');
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // Inline Edit Trigger
+    window.startInlineEdit = function(id) {
+      editingRowId = id;
+      renderTable();
+    };
+
+    window.cancelInlineEdit = function() {
+      editingRowId = null;
+      renderTable();
+    };
+
+    // Save inline template edit to Database
+    window.saveInlineEdit = async function(id) {
+      const category = document.getElementById('edit-category').value.trim();
+      const title = document.getElementById('edit-title').value.trim();
+      const content = document.getElementById('edit-content').value.trim();
+
+      if (!title || !content) {
+        alert("Title and Template Content are required.");
+        return;
+      }
+
+      const client = getDb();
+      try {
+        const { error } = await client
+          .from('message_templates')
+          .update({ category, title, content })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        // Local state update
+        const idx = templates.findIndex(t => t.id === id);
+        if (idx !== -1) {
+          templates[idx].category = category;
+          templates[idx].title = title;
+          templates[idx].content = content;
+        }
+
+        editingRowId = null;
+        renderTable();
+        showToastNotification("Row updated successfully!");
+      } catch (err) {
+        console.error("Update failed:", err);
+        alert("Update failed: " + err.message);
+      }
+    };
+
+    // Save inline ADDRESS edit to Database
+    window.saveAddressInlineEdit = async function(id) {
+      const title = document.getElementById('edit-addr-name').value.trim();
+      const category = document.getElementById('edit-addr-group').value.trim() || '개별 주소';
+      
+      const address = document.getElementById('edit-addr-address').value.trim();
+      const zip_code = document.getElementById('edit-addr-zip').value.trim();
+      const city = document.getElementById('edit-addr-city').value.trim();
+      const phone = document.getElementById('edit-addr-phone').value.trim();
+      const gate_code = document.getElementById('edit-addr-gate').value.trim();
+      const comment = document.getElementById('edit-addr-comment').value.trim();
+
+      if (!title) {
+        alert("Customer name (이름) is required.");
+        return;
+      }
+
+      // Encode address fields to JSON string
+      const addressObj = { address, zip_code, city, phone, gate_code, comment };
+      const content = JSON.stringify(addressObj);
+
+      const client = getDb();
+      try {
+        const { error } = await client
+          .from('message_templates')
+          .update({ category, title, content })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        // Local state update
+        const idx = templates.findIndex(t => t.id === id);
+        if (idx !== -1) {
+          templates[idx].category = category;
+          templates[idx].title = title;
+          templates[idx].content = content;
+        }
+
+        editingRowId = null;
+        renderTable();
+        showToastNotification("Address saved successfully!");
+      } catch (err) {
+        console.error("Address update failed:", err);
+        alert("Update failed: " + err.message);
+      }
+    };
+
+    // Delete Row
+    window.deleteTemplateRow = async function(id) {
+      if (!confirm("Are you sure you want to delete this row?")) return;
+
+      const client = getDb();
+      try {
+        const { error } = await client
+          .from('message_templates')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        // Local state update
+        templates = templates.filter(t => t.id !== id);
+        renderTable();
+        showToastNotification("Row deleted.");
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Delete failed: " + err.message);
+      }
+    };
+
+    // Add new template row / address row
+    window.addNewTemplateRow = async function() {
+      // Find max sort order in current sheet
+      let filtered = templates.filter(t => t.sheet_name === activeSheet);
+      let maxOrder = filtered.reduce((max, t) => (t.sort_order > max ? t.sort_order : max), 0);
+      let nextOrder = maxOrder + 10;
+
+      const client = getDb();
+      try {
+        // Custom payload if sheet is '주소'
+        const isAddressSheet = activeSheet === '주소';
+        const defaultContent = isAddressSheet 
+          ? JSON.stringify({ address: '', zip_code: '', city: '', phone: '', gate_code: '', comment: '' })
+          : 'Click edit to insert template response.';
+
+        const newRow = {
+          sheet_name: activeSheet,
+          category: isAddressSheet ? '개별 주소' : 'New Category',
+          title: isAddressSheet ? '새 고객명' : 'New Title',
+          content: defaultContent,
+          sort_order: nextOrder
+        };
+
+        const { data, error } = await client
+          .from('message_templates')
+          .insert([newRow])
+          .select();
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          templates.push(data[0]);
+          editingRowId = data[0].id; // Open editor instantly
+          renderTable();
+        }
+      } catch (err) {
+        console.error("Insertion failed:", err);
+        alert("Failed to add new row: " + err.message);
+      }
+    };
+
+    // Add new sheet tab
+    window.addNewSheetTab = function() {
+      const sheetName = prompt("Enter new sheet name:");
+      if (!sheetName) return;
+
+      const trimmedName = sheetName.trim();
+      if (trimmedName === '') return;
+
+      // Check duplicate
+      let sheetNames = [...new Set(templates.map(t => t.sheet_name))];
+      if (sheetNames.includes(trimmedName)) {
+        alert("A sheet tab with this name already exists.");
+        return;
+      }
+
+      // We switch immediately
+      activeSheet = trimmedName;
+      renderTabs();
+      renderTable();
+    };
+
+    // Delete sheet tab and all its templates
+    window.deleteSheetTab = async function(sheetName, event) {
+      if (event) event.stopPropagation(); // Avoid switching tabs
+
+      if (!confirm(`Are you sure you want to delete the tab "${sheetName}" and ALL its template messages? This cannot be undone.`)) {
+        return;
+      }
+
+      const client = getDb();
+      try {
+        let filtered = templates.filter(t => t.sheet_name === sheetName);
+        if (filtered.length > 0) {
+          const { error } = await client
+            .from('message_templates')
+            .delete()
+            .eq('sheet_name', sheetName);
+
+          if (error) throw error;
+        }
+
+        // Local state update
+        templates = templates.filter(t => t.sheet_name !== sheetName);
+        
+        // Choose new active tab
+        let remainingTabs = [...new Set(templates.map(t => t.sheet_name))];
+        activeSheet = remainingTabs.length > 0 ? remainingTabs[0] : 'Sheet1';
+
+        renderTabs();
+        renderTable();
+        showToastNotification(`Tab "${sheetName}" deleted successfully.`);
+      } catch (err) {
+        console.error("Failed to delete sheet tab:", err);
+        alert("Failed to delete sheet: " + err.message);
+      }
+    };
+
+    // Search functions
+    window.handleSearch = function(val) {
+      searchQuery = val.trim().toLowerCase();
+      
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (searchQuery) {
+        clearBtn.style.display = 'inline-flex';
+      } else {
+        clearBtn.style.display = 'none';
+      }
+      
+      renderTable();
+    };
+
+    window.clearSearch = function() {
+      document.getElementById('search-input').value = '';
+      searchQuery = '';
+      document.getElementById('clear-search-btn').style.display = 'none';
+      renderTable();
+    };
+
+    // Drag and Drop implementation
+    function handleDragStart(e) {
+      if (!isEditMode) return;
+      draggedRow = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', this.dataset.id);
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault(); // Required to drop
+      }
+      e.dataTransfer.dropEffect = 'move';
+      
+      if (draggedRow !== this) {
+        this.classList.add('drag-over');
+      }
+      return false;
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    async function handleDrop(e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+      this.classList.remove('drag-over');
+
+      if (draggedRow && draggedRow !== this) {
+        const draggedId = parseInt(draggedRow.dataset.id);
+        const targetId = parseInt(this.dataset.id);
+        
+        let filtered = templates.filter(t => t.sheet_name === activeSheet);
+        const draggedIndex = filtered.findIndex(t => t.id === draggedId);
+        const targetIndex = filtered.findIndex(t => t.id === targetId);
+        
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          // Reorder the local filtered array
+          const [movedItem] = filtered.splice(draggedIndex, 1);
+          filtered.splice(targetIndex, 0, movedItem);
+          
+          // Reassign sort_order values (10, 20, 30...)
+          filtered.forEach((item, idx) => {
+            item.sort_order = (idx + 1) * 10;
+          });
+          
+          // Sync changes back to main templates array
+          templates.forEach(t => {
+            if (t.sheet_name === activeSheet) {
+              const updated = filtered.find(f => f.id === t.id);
+              if (updated) {
+                t.sort_order = updated.sort_order;
+              }
+            }
+          });
+          
+          // Re-sort the main templates array
+          templates.sort((a, b) => a.sort_order - b.sort_order || a.created_at - b.created_at);
+
+          // Update UI
+          renderTable();
+
+          // Save changes asynchronously to Supabase
+          await saveReorderedTemplates(filtered);
+        }
+      }
+      return false;
+    }
+
+    function handleDragEnd(e) {
+      if (draggedRow) {
+        draggedRow.classList.remove('dragging');
+      }
+      const rows = document.querySelectorAll('.sheet-table tr');
+      rows.forEach(r => r.classList.remove('drag-over'));
+      draggedRow = null;
+    }
+
+    // Save reordered templates to Database via upsert bulk update
+    async function saveReorderedTemplates(sheetTemplates) {
+      const client = getDb();
+      if (!client) return;
+
+      showToastNotification("Updating row order... ⏳");
+
+      // Map templates into upsert payload format
+      const updates = sheetTemplates.map(t => ({
+        id: t.id,
+        sheet_name: t.sheet_name,
+        category: t.category,
+        title: t.title,
+        content: t.content,
+        sort_order: t.sort_order
+      }));
+
+      try {
+        const { error } = await client
+          .from('message_templates')
+          .upsert(updates);
+
+        if (error) throw error;
+        showToastNotification("Order saved successfully! 📋");
+      } catch (err) {
+        console.error("Failed to save reordered templates:", err);
+        alert("Failed to save reordering: " + err.message);
+      }
+    }
+
+    // Rename all templates in active address sheet sharing current category (building group name)
+    window.renameAddressGroup = async function(currentName) {
+      const newName = prompt("새로운 아파트/빌라 단지명을 입력해 주세요:", currentName);
+      if (!newName) return;
+      const trimmed = newName.trim();
+      if (trimmed === '' || trimmed === currentName) return;
+
+      const client = getDb();
+      if (!client) return;
+
+      let targets = templates.filter(t => t.sheet_name === '주소' && t.category === currentName);
+      if (targets.length === 0) return;
+
+      // Update local state
+      targets.forEach(t => {
+        t.category = trimmed;
+      });
+
+      showToastNotification("Updating group name... ⏳");
+
+      // Map to upsert payload
+      const updates = targets.map(t => ({
+        id: t.id,
+        sheet_name: t.sheet_name,
+        category: t.category,
+        title: t.title,
+        content: t.content,
+        sort_order: t.sort_order
+      }));
+
+      try {
+        const { error } = await client.from('message_templates').upsert(updates);
+        if (error) throw error;
+        renderTable();
+        showToastNotification("Group renamed successfully! 📋");
+      } catch (err) {
+        console.error("Failed to rename group:", err);
+        alert("Failed to rename group: " + err.message);
+        loadTemplates(); // Reload to recover local state
+      }
+    };
+
+    // Delete group (either delete all records, or ungroup them back to '개별 주소')
+    window.deleteAddressGroup = async function(groupName) {
+      const choice = confirm(`"${groupName}" 단지를 삭제하시겠습니까?\n\n- [확인/OK]: 소속된 거주자 정보도 함께 전부 영구 삭제합니다.\n- [취소/Cancel]: 거주자 정보는 유지하고 '개별 주소' 그룹으로 이동시킵니다.`);
+      
+      const client = getDb();
+      if (!client) return;
+
+      let targets = templates.filter(t => t.sheet_name === '주소' && t.category === groupName);
+      if (targets.length === 0) return;
+
+      if (choice) {
+        // Option A: Delete all associated residents
+        showToastNotification("Deleting group and residents... ⏳");
+        const targetIds = targets.map(t => t.id);
+        
+        try {
+          const { error } = await client
+            .from('message_templates')
+            .delete()
+            .in('id', targetIds);
+
+          if (error) throw error;
+
+          // Update local state
+          templates = templates.filter(t => !(t.sheet_name === '주소' && t.category === groupName));
+          renderTable();
+          showToastNotification("Group and residents deleted successfully.");
+        } catch (err) {
+          console.error("Delete group failed:", err);
+          alert("Failed to delete group: " + err.message);
+          loadTemplates();
+        }
+      } else {
+        // Option B: Keep residents, but change category to '개별 주소'
+        showToastNotification("Ungrouping residents... ⏳");
+        
+        targets.forEach(t => {
+          t.category = '개별 주소';
+        });
+
+        const updates = targets.map(t => ({
+          id: t.id,
+          sheet_name: t.sheet_name,
+          category: t.category,
+          title: t.title,
+          content: t.content,
+          sort_order: t.sort_order
+        }));
+
+        try {
+          const { error } = await client.from('message_templates').upsert(updates);
+          if (error) throw error;
+          renderTable();
+          showToastNotification("Group removed. Residents moved to individual addresses.");
+        } catch (err) {
+          console.error("Ungroup failed:", err);
+          alert("Failed to ungroup: " + err.message);
+          loadTemplates();
+        }
+      }
+    };
+
+    // Utility functions
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeJsString(str) {
+      if (!str) return '';
+      return str
+        .replace(/\\/g, '\\\\')
+        .replace(/`/g, '\\`')
+        .replace(/\$/g, '\\$')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r');
+    }
+  </script>
+</body>
+</html>
