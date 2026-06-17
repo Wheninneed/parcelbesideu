@@ -812,6 +812,59 @@ p, ul, ol {
   margin-bottom: 12px;
 }
 
+/* KATUSA banner & button */
+.katusa-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-top: -4px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.katusa-banner:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+}
+.katusa-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.katusa-emoji {
+  font-size: 20px;
+}
+.katusa-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #166534;
+}
+.katusa-btn {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #16a34a;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: background-color 0.15s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.katusa-btn:hover {
+  background-color: #15803d;
+}
+.katusa-btn:active {
+  transform: scale(0.97);
+}
+
 @media (max-width: 768px) {
   body { font-size: 16px; }
   .logo { font-size: 20px; }
@@ -888,5 +941,17 @@ p, ul, ol {
     margin-left: 0;
     text-align: center;
     padding: 10px;
+  }
+  .katusa-banner {
+    padding: 10px 12px;
+    margin-top: -4px;
+    margin-bottom: 4px;
+  }
+  .katusa-text {
+    font-size: 14px;
+  }
+  .katusa-btn {
+    font-size: 12px;
+    padding: 6px 12px;
   }
 }
