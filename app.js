@@ -5,6 +5,57 @@
 const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
 
+// =============================================
+// ANONYMOUS VISIT TRACKING (site_visits table)
+// Logs one pageview per load. No personal data —
+// only a random visitor id, page path, referrer.
+// Skipped on localhost. Must never break the site.
+// =============================================
+(function() {
+  try {
+    var host = location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || location.protocol === 'file:') return;
+
+    var vid = null;
+    try {
+      vid = localStorage.getItem('pbu_vid');
+      if (!vid) {
+        vid = (window.crypto && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'v-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('pbu_vid', vid);
+      }
+    } catch (e) {
+      // localStorage blocked (private mode etc.) — still count the view
+      vid = 'anon';
+    }
+
+    var page = location.pathname.replace(/\.html$/, '').replace(/\/+$/, '');
+    if (!page) page = '/';
+
+    var utm = '';
+    try { utm = new URLSearchParams(location.search).get('utm_source') || ''; } catch (e) {}
+
+    var ref = document.referrer || '';
+    try {
+      // Internal navigation is not a traffic source
+      if (ref && new URL(ref).hostname.replace(/^www\./, '') === host.replace(/^www\./, '')) ref = '';
+    } catch (e) {}
+
+    fetch(SUPABASE_URL + '/rest/v1/site_visits', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ visitor_id: vid, page: page, referrer: ref, utm_source: utm }),
+      keepalive: true
+    }).catch(function() {});
+  } catch (e) { /* tracking errors are silent by design */ }
+})();
+
 (function() {
   // Mobile Menu
   var hamburger = document.querySelector('.hamburger');

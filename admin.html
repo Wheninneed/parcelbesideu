@@ -69,6 +69,68 @@
       padding: 16px;
       border-radius: 6px;
     }
+    /* --- Visit stats --- */
+    .stat-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+    .stat-tile {
+      background: var(--bg-main, #fff);
+      border: 1px solid var(--divider);
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .stat-num { font-size: 26px; font-weight: 700; color: #111827; }
+    .stat-label { font-size: 13px; color: var(--text-gray, #6b7280); margin-top: 2px; }
+    .stats-section-title { font-weight: 600; font-size: 14px; margin: 22px 0 10px; }
+    .daily-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 120px;
+      border-bottom: 1px solid var(--divider);
+      padding-bottom: 1px;
+    }
+    .daily-bar {
+      flex: 1;
+      background: #3b82f6;
+      border-radius: 4px 4px 0 0;
+      min-height: 2px;
+    }
+    .daily-bar.empty { background: #e5e7eb; }
+    .daily-x {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-gray, #6b7280);
+      margin-top: 6px;
+    }
+    .stats-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 640px) { .stats-cols { grid-template-columns: 1fr; } }
+    .hbar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .hbar-label {
+      width: 40%;
+      max-width: 170px;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+    }
+    .hbar-track { flex: 1; background: #f3f4f6; border-radius: 4px; height: 12px; overflow: hidden; }
+    .hbar-fill { height: 100%; background: #3b82f6; border-radius: 4px; }
+    .hbar-count { color: var(--text-gray, #6b7280); min-width: 34px; text-align: right; }
   </style>
 </head>
 <body>
@@ -114,6 +176,35 @@
         </div>
       </div>
       
+      <!-- 0. Visit Stats -->
+      <div class="input-group">
+        <label>📊 방문 통계</label>
+        <div class="section-box">
+          <p id="stats-status" style="margin: 0; color: var(--text-gray, #6b7280); font-size: 14px;">방문 통계를 불러오는 중...</p>
+          <div id="stats-body" class="hidden">
+            <div class="stat-tiles">
+              <div class="stat-tile"><div class="stat-num" id="stat-today">0</div><div class="stat-label">오늘 방문자</div></div>
+              <div class="stat-tile"><div class="stat-num" id="stat-week">0</div><div class="stat-label">최근 7일 방문자</div></div>
+              <div class="stat-tile"><div class="stat-num" id="stat-month">0</div><div class="stat-label">최근 30일 방문자</div></div>
+              <div class="stat-tile"><div class="stat-num" id="stat-views">0</div><div class="stat-label">30일 페이지뷰</div></div>
+            </div>
+            <p class="stats-section-title">일별 방문자 (최근 30일)</p>
+            <div id="daily-chart" class="daily-chart"></div>
+            <div id="daily-x" class="daily-x"></div>
+            <div class="stats-cols">
+              <div>
+                <p class="stats-section-title">페이지별 조회수 (30일)</p>
+                <div id="page-bars"></div>
+              </div>
+              <div>
+                <p class="stats-section-title">유입 경로 (30일)</p>
+                <div id="source-bars"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 1. Business Hours -->
       <div class="input-group">
         <label>⏰ Business Hours</label>
@@ -526,11 +617,196 @@
     }
 
     // =============================================
+    // VISIT STATS (site_visits table)
+    // =============================================
+    var PAGE_LABELS = {
+      '/': 'Home',
+      '/index': 'Home',
+      '/package-holding': 'Package Holding (EN)',
+      '/package-holding-ko': '한글 가이드 (카투사)',
+      '/package-holding-guide': 'Holding Guide',
+      '/online-shopping-1': 'Order & Hold',
+      '/online-shopping-2': 'Order & Deliver',
+      '/stores': 'Korean Stores',
+      '/faq': 'FAQ',
+      '/about': 'About Us'
+    };
+
+    function classifySource(utm, ref) {
+      var s = (utm || '').toLowerCase();
+      if (!s && ref) {
+        try { s = new URL(ref).hostname.replace(/^(www|m|l|lm)\./, ''); } catch (e) { s = ref; }
+        s = s.toLowerCase();
+      }
+      if (!s) return '직접 방문';
+      if (s.indexOf('instagram') !== -1) return 'Instagram';
+      if (s.indexOf('facebook') !== -1 || s.indexOf('fb.com') !== -1) return 'Facebook';
+      if (s.indexOf('google') !== -1) return 'Google';
+      if (s.indexOf('naver') !== -1) return 'Naver';
+      if (s.indexOf('kakao') !== -1) return 'Kakao';
+      return s;
+    }
+
+    function statDayKey(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    async function loadVisitStats() {
+      var client = getDb();
+      var statusEl = document.getElementById('stats-status');
+      var bodyEl = document.getElementById('stats-body');
+      if (!client || !statusEl) return;
+
+      try {
+        var since = new Date();
+        since.setDate(since.getDate() - 29);
+        since.setHours(0, 0, 0, 0);
+
+        // Supabase returns max 1000 rows per request — page through
+        var rows = [];
+        for (var from = 0; from < 20000; from += 1000) {
+          var res = await client.from('site_visits')
+            .select('visitor_id,page,referrer,utm_source,created_at')
+            .gte('created_at', since.toISOString())
+            .order('created_at', { ascending: true })
+            .range(from, from + 999);
+          if (res.error) throw res.error;
+          rows = rows.concat(res.data || []);
+          if (!res.data || res.data.length < 1000) break;
+        }
+
+        renderVisitStats(rows, since);
+        statusEl.classList.add('hidden');
+        bodyEl.classList.remove('hidden');
+      } catch (err) {
+        statusEl.innerText = '⚠️ 방문 통계를 불러오지 못했습니다: ' + err.message
+          + ' — site_visits 테이블이 아직 없다면 Supabase SQL 설정을 먼저 실행해주세요.';
+      }
+    }
+
+    function renderVisitStats(rows, since) {
+      var days = [];
+      var byDay = {};
+      for (var i = 0; i < 30; i++) {
+        var d = new Date(since);
+        d.setDate(since.getDate() + i);
+        var k = statDayKey(d);
+        days.push(k);
+        byDay[k] = { visitors: {}, views: 0 };
+      }
+
+      var todayKey = statDayKey(new Date());
+      var weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 6);
+      weekStart.setHours(0, 0, 0, 0);
+
+      var todaySet = {}, weekSet = {}, monthSet = {};
+      var pageCount = {};
+      var sourceCount = {};
+      var seenEntry = {}; // visitor+day → first pageview decides the traffic source
+
+      rows.forEach(function(r) {
+        var d = new Date(r.created_at);
+        var k = statDayKey(d);
+        if (byDay[k]) {
+          byDay[k].views++;
+          byDay[k].visitors[r.visitor_id] = 1;
+        }
+        monthSet[r.visitor_id] = 1;
+        if (d >= weekStart) weekSet[r.visitor_id] = 1;
+        if (k === todayKey) todaySet[r.visitor_id] = 1;
+
+        var label = PAGE_LABELS[r.page] || r.page;
+        pageCount[label] = (pageCount[label] || 0) + 1;
+
+        var entryKey = r.visitor_id + '|' + k;
+        if (!seenEntry[entryKey]) {
+          seenEntry[entryKey] = 1;
+          var src = classifySource(r.utm_source, r.referrer);
+          sourceCount[src] = (sourceCount[src] || 0) + 1;
+        }
+      });
+
+      // Stat tiles
+      document.getElementById('stat-today').innerText = Object.keys(todaySet).length.toLocaleString();
+      document.getElementById('stat-week').innerText = Object.keys(weekSet).length.toLocaleString();
+      document.getElementById('stat-month').innerText = Object.keys(monthSet).length.toLocaleString();
+      document.getElementById('stat-views').innerText = rows.length.toLocaleString();
+
+      // Daily bar chart
+      var chart = document.getElementById('daily-chart');
+      chart.innerHTML = '';
+      var max = 1;
+      days.forEach(function(k) {
+        var n = Object.keys(byDay[k].visitors).length;
+        if (n > max) max = n;
+      });
+      days.forEach(function(k) {
+        var n = Object.keys(byDay[k].visitors).length;
+        var bar = document.createElement('div');
+        bar.className = 'daily-bar' + (n === 0 ? ' empty' : '');
+        bar.style.height = n === 0 ? '2px' : Math.max(4, Math.round(n / max * 100)) + '%';
+        var parts = k.split('-');
+        bar.title = parseInt(parts[1]) + '/' + parseInt(parts[2]) + ' · 방문자 ' + n + ' · 조회 ' + byDay[k].views;
+        chart.appendChild(bar);
+      });
+      function fmtShort(k) {
+        var p = k.split('-');
+        return parseInt(p[1]) + '/' + parseInt(p[2]);
+      }
+      document.getElementById('daily-x').innerHTML =
+        '<span>' + fmtShort(days[0]) + '</span><span>' + fmtShort(days[14]) + '</span><span>' + fmtShort(days[29]) + '</span>';
+
+      // Horizontal bar lists
+      function renderBars(containerId, counts, emptyText) {
+        var el = document.getElementById(containerId);
+        el.innerHTML = '';
+        var entries = Object.keys(counts).map(function(k) { return [k, counts[k]]; })
+          .sort(function(a, b) { return b[1] - a[1]; })
+          .slice(0, 8);
+        if (entries.length === 0) {
+          el.innerHTML = '<p style="color: var(--text-gray, #6b7280); font-size: 13px; margin: 0;">' + emptyText + '</p>';
+          return;
+        }
+        var maxCount = entries[0][1];
+        entries.forEach(function(pair) {
+          var row = document.createElement('div');
+          row.className = 'hbar-row';
+          row.title = pair[0] + ' · ' + pair[1].toLocaleString();
+
+          var label = document.createElement('span');
+          label.className = 'hbar-label';
+          label.textContent = pair[0];
+
+          var track = document.createElement('div');
+          track.className = 'hbar-track';
+          var fill = document.createElement('div');
+          fill.className = 'hbar-fill';
+          fill.style.width = Math.max(3, Math.round(pair[1] / maxCount * 100)) + '%';
+          track.appendChild(fill);
+
+          var count = document.createElement('span');
+          count.className = 'hbar-count';
+          count.textContent = pair[1].toLocaleString();
+
+          row.appendChild(label);
+          row.appendChild(track);
+          row.appendChild(count);
+          el.appendChild(row);
+        });
+      }
+      renderBars('page-bars', pageCount, '아직 기록이 없습니다.');
+      renderBars('source-bars', sourceCount, '아직 기록이 없습니다.');
+    }
+
+    // =============================================
     // LOAD DATA from Supabase
     // =============================================
     async function loadDashboardData() {
       var client = getDb();
       if (!client) return;
+
+      loadVisitStats(); // runs in parallel, doesn't block settings load
 
       try {
         var result = await client.from('site_settings').select('*');
