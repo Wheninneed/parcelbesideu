@@ -71,6 +71,23 @@ Supabase anon key는 클라이언트 코드에 노출되는 것이 정상이며,
 - 관리자 페이지(`admin*.html`)는 로그인 세션 확인 후에만 데이터를 로드하는 구조 — 이 순서를 깨지 말 것
 - 새 테이블 추가 시 `alter table ... enable row level security` + 정책을 같은 SQL에 포함
 
+### 배포 노출 규칙 (중요)
+
+Vercel 정적 배포라 **저장소의 모든 파일이 `parcelbesideu.com/<파일명>`으로 공개된다.** `.vercelignore`에 없으면 전부 노출. GitHub를 비공개로 바꿔도 이건 그대로다(배포본은 별개).
+
+- 새 파일을 추가할 때마다 "이게 웹에 공개돼도 되는가"를 판단하고, 아니면 `.vercelignore`에 추가
+- 현재 제외: `*.md`, `sql/`, `vercel-admin-live.txt`, `update-nav.js`, `_*.html`
+- anon key가 HTML에 보이는 것은 정상(공개용). 보호는 전적으로 RLS가 담당
+- `service_role` 키는 클라이언트 코드에 **절대** 넣지 않는다 (RLS를 무시하는 마스터 키)
+
+### 보안 점검 체크리스트 (기능 추가·배포 전마다 실행)
+
+1. 새 테이블/버킷에 RLS·정책이 걸렸는가 → `select tablename from pg_tables where schemaname='public' and rowsecurity=false;` 결과가 0줄
+2. 비로그인 상태에서 새 테이블 조회·쓰기가 차단되는가 (anon key로 실제 요청해 확인)
+3. 새로 추가한 파일이 웹에 노출되는가 → 배포 후 URL로 직접 접근해 404 확인
+4. 민감 키가 코드·커밋 이력에 들어갔는가 → `service_role`, `.env`, JWT payload의 `role` 확인
+5. 저장한 사진·첨부는 공개 버킷인가 비공개 버킷인가 (지출 첨부는 비공개 + 서명 링크)
+
 ## 파일 구조
 
 ```
