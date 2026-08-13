@@ -55,8 +55,11 @@ Supabase anon key는 클라이언트 코드에 노출되는 것이 정상이며,
 | `message_templates` (고객 주소록·PII) | 접근 전면 차단 | 전체 읽기·쓰기 |
 | `site_settings` (영업시간·FAQ·쇼핑몰) | 읽기만 | 읽기·쓰기 |
 | `site_visits` (방문 통계) | 기록(insert)만 | 읽기 |
+| `expenses` (운영비 지출) | 접근 전면 차단 | 전체 읽기·쓰기 |
 
-적용 SQL: `sql/2026-08-13-enable-rls.sql`, `sql/2026-07-21-site-visits.sql`
+저장소(Storage): `images`는 공개(쇼핑몰 로고용), `expense-photos`는 **비공개** — 지출 첨부 사진은 서명 링크(`createSignedUrl`)로만 열람
+
+적용 SQL: `sql/2026-08-13-enable-rls.sql`, `sql/2026-07-21-site-visits.sql`, `sql/2026-08-13-expenses.sql`
 
 주의사항:
 - `message_templates`에는 고객 이름·주소·전화번호·현관 출입코드가 들어 있다. 이 테이블을 비로그인에 열어주는 변경은 절대 금지
@@ -76,6 +79,7 @@ faq.html / about.html    # FAQ, 소개
 admin.html               # 관리자 대시보드
 admin-faq.html           # 관리자 FAQ 관리
 admin-templates.html     # 관리자 템플릿/주소록 스프레드시트 (드래그 정렬, 그룹 관리)
+admin-expenses.html      # 관리자 지출 관리 (분류별 집계, 광고 상세, 달러 환산, 사진 첨부)
 styles.css               # 전역 테마 (.katusa-banner, 반응형 포함)
 app.js                   # Supabase 연결, 동적 데이터 로딩, 클립보드 복사
 vercel.json              # cleanUrls 설정
