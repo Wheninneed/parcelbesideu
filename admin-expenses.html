@@ -8,44 +8,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .exp-container {
-      background: var(--bg-main);
-      border: 1px solid var(--divider);
-      border-radius: 8px;
-      padding: 28px;
-      margin-top: 24px;
+      background: var(--bg-main); border: 1px solid var(--divider);
+      border-radius: 8px; padding: 28px; margin-top: 24px;
     }
     .hidden { display: none; }
 
     /* --- 로그인 --- */
     .login-field { margin-bottom: 20px; }
     .login-field label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 16px; }
-    .login-field input {
-      width: 100%; padding: 12px; border: 1px solid var(--divider);
-      border-radius: 4px; font-family: inherit; font-size: 16px;
-    }
+    .login-field input { width: 100%; padding: 12px; border: 1px solid var(--divider); border-radius: 4px; font-family: inherit; font-size: 16px; }
 
     /* --- 상단 --- */
-    .exp-toolbar {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
-    }
+    .exp-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
     .month-nav { display: flex; align-items: center; gap: 8px; }
-    .month-nav button {
-      border: 1px solid var(--divider); background: #fff; border-radius: 6px;
-      width: 32px; height: 32px; cursor: pointer; font-size: 15px; color: var(--text-main);
-    }
+    .month-nav button { border: 1px solid var(--divider); background: #fff; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; font-size: 15px; color: var(--text-main); }
     .month-nav button:hover { background: var(--bg-hover); }
     .month-label { font-size: 17px; font-weight: 700; min-width: 108px; text-align: center; }
-    .btn-primary {
-      background: #111827; color: #fff; border: none; padding: 10px 18px;
-      border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
-    }
+    .btn-primary { background: #111827; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
     .btn-primary:hover { background: #1f2937; }
     .btn-primary:disabled { opacity: 0.5; cursor: default; }
-    .btn-ghost {
-      background: #fff; border: 1px solid var(--divider); padding: 10px 18px;
-      border-radius: 6px; font-size: 15px; cursor: pointer; font-family: inherit; color: var(--text-main);
-    }
+    .btn-ghost { background: #fff; border: 1px solid var(--divider); padding: 10px 18px; border-radius: 6px; font-size: 15px; cursor: pointer; font-family: inherit; color: var(--text-main); }
+    .btn-sm { padding: 6px 13px; font-size: 13px; }
 
     .hero { border: 1px solid var(--divider); border-radius: 8px; padding: 20px 22px; margin-bottom: 22px; }
     .hero-label { font-size: 14px; color: var(--text-gray); }
@@ -55,14 +38,15 @@
     .delta-down { color: #15803d; }
     .delta-flat { color: var(--text-gray); }
 
-    /* --- 분류별 --- */
+    /* --- 집계 막대 --- */
     .sec-title { font-weight: 600; font-size: 14px; margin: 24px 0 12px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; gap: 6px; } }
     .cat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; }
-    .cat-name { width: 96px; flex-shrink: 0; }
+    .cat-name { width: 84px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cat-track { flex: 1; background: #f3f4f6; border-radius: 4px; height: 14px; overflow: hidden; }
     .cat-fill { height: 100%; border-radius: 4px; display: block; }
-    .cat-amt { min-width: 96px; text-align: right; font-variant-numeric: tabular-nums; }
-    .cat-pct { min-width: 42px; text-align: right; color: var(--text-gray); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .cat-amt { min-width: 88px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13.5px; }
 
     /* --- 추이 --- */
     .trend { display: flex; align-items: flex-end; gap: 10px; height: 110px; }
@@ -73,34 +57,47 @@
     .trend-x { display: flex; gap: 10px; margin-top: 8px; }
     .trend-x span { flex: 1; text-align: center; font-size: 12px; color: var(--text-gray); }
 
+    /* --- 정기결제 --- */
+    .recur-alert { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .recur-alert-text { flex: 1; font-size: 14px; min-width: 200px; }
+    .recur-alert-text b { display: block; margin-bottom: 2px; }
+    .recur-item { border: 1px solid var(--divider); border-radius: 8px; padding: 13px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .recur-item.off { opacity: 0.55; }
+    .recur-day { background: #f3f4f6; border-radius: 6px; padding: 5px 9px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+    .recur-name { font-weight: 600; font-size: 15px; }
+    .recur-meta { font-size: 12.5px; color: var(--text-gray); margin-top: 1px; }
+    .recur-amt { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .recur-state { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+    .state-done { color: #15803d; }
+    .state-todo { color: #b45309; }
+    .state-off { color: var(--text-gray); }
+
     /* --- 목록 --- */
     .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-    .chip {
-      border: 1px solid var(--divider); background: #fff; border-radius: 14px;
-      padding: 5px 13px; font-size: 13px; cursor: pointer; font-family: inherit; color: var(--text-main);
-    }
+    .chip { border: 1px solid var(--divider); background: #fff; border-radius: 14px; padding: 5px 13px; font-size: 13px; cursor: pointer; font-family: inherit; color: var(--text-main); }
     .chip:hover { background: var(--bg-hover); }
     .chip.active { background: #111827; color: #fff; border-color: #111827; }
 
-    .exp-item { border: 1px solid var(--divider); border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; }
-    .exp-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .exp-date { font-size: 13px; color: var(--text-gray); width: 46px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
-    .badge { font-size: 12px; padding: 3px 9px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+    .exp-item { border: 1px solid var(--divider); border-radius: 8px; padding: 13px 14px 13px 16px; margin-bottom: 8px; }
+    .exp-head { display: flex; align-items: center; gap: 9px; }
+    .exp-title { font-weight: 600; font-size: 15px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .badge { font-size: 11.5px; padding: 2px 8px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
     .b-ad { background: #dbeafe; color: #1e40af; }
     .b-print { background: #ede9fe; color: #5b21b6; }
     .b-office { background: #fef3c7; color: #92400e; }
+    .b-fixed { background: #d1fae5; color: #065f46; }
     .b-etc { background: #f3f4f6; color: #374151; }
-    .exp-vendor { font-weight: 600; font-size: 15px; }
-    .exp-amt { margin-left: auto; text-align: right; white-space: nowrap; }
-    .exp-amt b { font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
-    .exp-amt small { display: block; font-size: 12px; color: var(--text-gray); font-variant-numeric: tabular-nums; }
-    .exp-memo { font-size: 13.5px; color: var(--text-gray); margin-top: 7px; }
-    .exp-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
-    .link-btn {
-      background: none; border: none; color: #2563eb; cursor: pointer;
-      font-size: 13px; padding: 0; font-family: inherit;
-    }
+    .recur-mark { font-size: 13px; cursor: default; }
+    .exp-amt { text-align: right; white-space: nowrap; }
+    .exp-amt b { font-weight: 700; font-size: 15.5px; font-variant-numeric: tabular-nums; }
+    .exp-amt small { display: block; font-size: 11.5px; color: var(--text-gray); font-variant-numeric: tabular-nums; margin-top: -2px; }
+    .more-btn { background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px; border-radius: 4px; width: 22px; flex-shrink: 0; font-family: inherit; }
+    .more-btn:hover { background: var(--bg-hover); color: var(--text-main); }
+    .exp-meta { font-size: 12.5px; color: var(--text-gray); margin-top: 5px; }
+    .exp-row2 { display: flex; align-items: center; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+    .link-btn { background: none; border: none; color: #2563eb; cursor: pointer; font-size: 12.5px; padding: 0; font-family: inherit; }
     .link-btn.danger { color: #dc2626; }
+    .row-actions { margin-left: auto; display: flex; gap: 12px; }
     .ad-detail { margin-top: 10px; padding: 12px 14px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #3b82f6; }
     .ad-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px 18px; font-size: 13.5px; }
     .ad-k { color: var(--text-gray); font-size: 12.5px; }
@@ -111,19 +108,15 @@
 
     /* --- 폼 --- */
     .form-card { border: 1px solid var(--divider); border-radius: 8px; padding: 20px; margin-bottom: 22px; background: #fcfcfc; }
+    .form-card.recur-form { background: #f0fdf4; border-color: #86efac; }
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
     .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
-    .field input, .field select, .field textarea {
-      width: 100%; padding: 9px 10px; font-size: 14px; border: 1px solid var(--divider);
-      border-radius: 5px; font-family: inherit; background: #fff; color: var(--text-main);
-    }
+    .field input, .field select, .field textarea { width: 100%; padding: 9px 10px; font-size: 14px; border: 1px solid var(--divider); border-radius: 5px; font-family: inherit; background: #fff; color: var(--text-main); }
     .field textarea { resize: vertical; min-height: 74px; line-height: 1.6; }
     .field-hint { font-size: 12px; color: var(--text-gray); margin-top: 4px; }
+    .label-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .cat-picker { display: flex; gap: 6px; flex-wrap: wrap; }
-    .cat-opt {
-      border: 1px solid var(--divider); background: #fff; border-radius: 6px;
-      padding: 8px 14px; font-size: 14px; cursor: pointer; font-family: inherit; color: var(--text-main);
-    }
+    .cat-opt { border: 1px solid var(--divider); background: #fff; border-radius: 6px; padding: 8px 14px; font-size: 14px; cursor: pointer; font-family: inherit; color: var(--text-main); }
     .cat-opt.active { background: #111827; color: #fff; border-color: #111827; }
     .ad-fields { margin-top: 16px; padding: 16px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe; }
     .ad-fields-title { font-size: 13px; font-weight: 700; color: #1e40af; margin-bottom: 12px; }
@@ -133,13 +126,33 @@
     .photo-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .photo-name { font-size: 13px; color: var(--text-gray); }
     .status-msg { font-size: 14px; font-weight: 600; }
+    .form-head { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
 
+    /* --- 결제수단 관리 --- */
+    .pay-manage { margin-top: 8px; padding: 12px 14px; background: #fff; border: 1px solid var(--divider); border-radius: 6px; }
+    .pay-manage-title { font-size: 12.5px; font-weight: 700; margin-bottom: 9px; color: var(--text-gray); }
+    .pay-mrow { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 14px; }
+    .pay-mname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pay-mrow input { flex: 1; padding: 6px 8px; font-size: 13.5px; border: 1px solid var(--divider); border-radius: 4px; font-family: inherit; }
+    .icon-btn { background: none; border: none; cursor: pointer; font-size: 13px; padding: 2px 4px; border-radius: 4px; color: var(--text-gray); font-family: inherit; }
+    .icon-btn:hover { background: var(--bg-hover); }
+    .pay-add { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider); }
+    .pay-add input { flex: 1; padding: 7px 9px; font-size: 13.5px; border: 1px solid var(--divider); border-radius: 4px; font-family: inherit; }
+
+    /* --- 좁은 화면 --- */
     @media (max-width: 640px) {
-      .exp-container { padding: 18px; }
+      .exp-container { padding: 16px; }
       .hero-num { font-size: 32px; }
-      .cat-name { width: 70px; font-size: 13px; }
-      .cat-amt { min-width: 80px; font-size: 13px; }
-      .exp-amt { margin-left: 0; text-align: left; }
+      .cat-name { width: 72px; font-size: 13px; }
+      .cat-amt { min-width: 78px; font-size: 13px; }
+      .exp-head { flex-wrap: wrap; row-gap: 4px; }
+      .exp-title { flex: 1 1 calc(100% - 32px); order: 1; }
+      .more-btn { order: 2; }
+      .recur-mark { order: 3; }
+      .badge { order: 4; }
+      .exp-amt { order: 5; margin-left: auto; }
+      .recur-item { row-gap: 4px; }
+      .recur-amt { margin-left: 0; }
     }
   </style>
 </head>
@@ -187,14 +200,17 @@
         <button class="btn-primary" type="button" id="toggle-form">+ 지출 추가</button>
       </div>
 
-      <!-- 입력 폼 -->
+      <!-- 지출 입력 폼 -->
       <div class="form-card hidden" id="form-card">
+        <div class="form-head hidden" id="form-title"></div>
+
         <div class="field" style="margin-bottom:14px;">
           <label>분류</label>
           <div class="cat-picker" id="cat-picker">
             <button type="button" class="cat-opt active" data-cat="광고비">📣 광고비</button>
             <button type="button" class="cat-opt" data-cat="인쇄물">🖨️ 인쇄물</button>
             <button type="button" class="cat-opt" data-cat="사무실 비품">🏢 사무실 비품</button>
+            <button type="button" class="cat-opt" data-cat="고정비">🏠 고정비</button>
             <button type="button" class="cat-opt" data-cat="기타">📎 기타</button>
           </div>
         </div>
@@ -220,6 +236,22 @@
             <div class="field-hint" id="fx-hint">원화로 환산해 합계에 반영됩니다</div>
           </div>
           <div class="field">
+            <div class="label-row">
+              <label for="f-pay" style="margin:0;">결제수단</label>
+              <button type="button" class="link-btn" id="pay-manage-toggle">관리</button>
+            </div>
+            <select id="f-pay" style="margin-top:5px;"></select>
+            <div class="pay-manage hidden" id="pay-manage">
+              <div class="pay-manage-title">결제수단 관리 — 이름을 바꾸거나 목록에서 지울 수 있어요</div>
+              <div id="pay-mlist"></div>
+              <div class="pay-add">
+                <input type="text" id="pay-new" placeholder="새 결제수단 (예: 국민카드)" />
+                <button type="button" class="btn-ghost btn-sm" id="pay-add-btn">추가</button>
+              </div>
+              <p class="status-msg" id="pay-status" style="margin:8px 0 0;font-size:12.5px;"></p>
+            </div>
+          </div>
+          <div class="field">
             <label for="f-vendor">지출처</label>
             <input type="text" id="f-vendor" placeholder="예: Meta, 인쇄나라" />
           </div>
@@ -234,7 +266,7 @@
           <label>사진 첨부 <span style="font-weight:400;color:var(--text-gray);">(선택)</span></label>
           <div class="photo-row">
             <input type="file" id="f-photo-file" accept="image/*" class="hidden" />
-            <button type="button" class="btn-ghost" id="photo-pick-btn" style="padding:8px 14px;font-size:14px;">사진 선택</button>
+            <button type="button" class="btn-ghost btn-sm" id="photo-pick-btn">사진 선택</button>
             <span class="photo-name" id="photo-name">선택된 파일 없음</span>
             <button type="button" class="link-btn danger hidden" id="photo-clear-btn">제거</button>
           </div>
@@ -280,20 +312,80 @@
         <div class="hero-delta" id="hero-delta"></div>
       </div>
 
-      <p class="sec-title">분류별 지출</p>
-      <div id="cat-bars"></div>
+      <div class="two-col">
+        <div>
+          <p class="sec-title">분류별 지출</p>
+          <div id="cat-bars"></div>
+        </div>
+        <div>
+          <p class="sec-title">결제수단별 지출</p>
+          <div id="pay-bars"></div>
+        </div>
+      </div>
 
       <p class="sec-title">최근 6개월 추이</p>
       <div class="trend" id="trend"></div>
       <div class="trend-x" id="trend-x"></div>
 
+      <!-- 정기결제 -->
+      <p class="sec-title">🔁 정기결제</p>
+      <div id="recur-alert-host"></div>
+      <div id="recur-list"></div>
+      <div style="margin: 10px 0 4px;">
+        <button class="btn-ghost btn-sm" type="button" id="toggle-recur-form">+ 정기결제 추가</button>
+      </div>
+
+      <div class="form-card recur-form hidden" id="recur-form">
+        <div class="form-head" id="recur-form-title">🔁 정기결제 등록</div>
+        <div class="form-grid">
+          <div class="field"><label for="r-name">항목 이름</label><input type="text" id="r-name" placeholder="예: 인터넷 (KT)" /></div>
+          <div class="field">
+            <label for="r-amount">금액</label>
+            <div class="amt-row">
+              <select id="r-currency" aria-label="통화"><option value="KRW">₩</option><option value="USD">$</option></select>
+              <input type="number" id="r-amount" step="0.01" min="0" placeholder="39600" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="r-day">결제일</label>
+            <select id="r-day"></select>
+          </div>
+          <div class="field">
+            <label for="r-pay">결제수단</label>
+            <select id="r-pay"></select>
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label>분류</label>
+          <div class="cat-picker" id="r-cat-picker">
+            <button type="button" class="cat-opt" data-cat="광고비">📣 광고비</button>
+            <button type="button" class="cat-opt" data-cat="인쇄물">🖨️ 인쇄물</button>
+            <button type="button" class="cat-opt" data-cat="사무실 비품">🏢 사무실 비품</button>
+            <button type="button" class="cat-opt active" data-cat="고정비">🏠 고정비</button>
+            <button type="button" class="cat-opt" data-cat="기타">📎 기타</button>
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label for="r-memo">메모</label>
+          <input type="text" id="r-memo" placeholder="등록할 때 함께 기록됩니다 (선택)" />
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" type="button" id="recur-save">저장</button>
+          <button class="btn-ghost" type="button" id="recur-cancel">취소</button>
+          <span class="status-msg" id="recur-status"></span>
+        </div>
+      </div>
+
+      <!-- 지출 내역 -->
       <p class="sec-title">지출 내역 <span style="font-weight:400;color:var(--text-gray);" id="list-count"></span></p>
       <div class="filter-chips" id="filter-chips">
         <button type="button" class="chip active" data-f="all">전체</button>
         <button type="button" class="chip" data-f="광고비">광고비</button>
         <button type="button" class="chip" data-f="인쇄물">인쇄물</button>
         <button type="button" class="chip" data-f="사무실 비품">사무실 비품</button>
+        <button type="button" class="chip" data-f="고정비">고정비</button>
         <button type="button" class="chip" data-f="기타">기타</button>
+        <button type="button" class="chip" data-f="정기">🔁 정기결제만</button>
       </div>
       <div id="exp-list"><p style="color:var(--text-gray);font-size:14px;">불러오는 중...</p></div>
 
@@ -302,7 +394,7 @@
 
   <script>
     // =========================================================
-    // 지출 관리 — 전체 로직 (이 파일에서 자체 완결)
+    // 지출 관리 — 전체 로직
     // =========================================================
     const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
@@ -314,161 +406,177 @@
       return db;
     }
 
-    var CATEGORIES = ['광고비', '인쇄물', '사무실 비품', '기타'];
-    var BADGE = { '광고비': 'b-ad', '인쇄물': 'b-print', '사무실 비품': 'b-office', '기타': 'b-etc' };
-    var CATCOLOR = { '광고비': '#3b82f6', '인쇄물': '#8b5cf6', '사무실 비품': '#f59e0b', '기타': '#9ca3af' };
+    var BADGE = { '광고비': 'b-ad', '인쇄물': 'b-print', '사무실 비품': 'b-office', '고정비': 'b-fixed', '기타': 'b-etc' };
+    var CATCOLOR = { '광고비': '#3b82f6', '인쇄물': '#8b5cf6', '사무실 비품': '#f59e0b', '고정비': '#10b981', '기타': '#9ca3af' };
+    // 결제수단 색: 목록 순서(=정체성)에 따라 고정 배정. 금액 순위에 따라 바뀌지 않는다.
+    var PAY_PALETTE = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899', '#06b6d4', '#84cc16', '#6b7280'];
 
-    var allRows = [];          // 전체 지출 (DB에서 1회 로드)
-    var viewMonth = new Date(); // 보고 있는 달
-    viewMonth.setDate(1);
+    var allRows = [];       // 지출 전체
+    var payMethods = [];    // [{id, name, sort_order}]
+    var recurItems = [];    // [{id, name, amount, ...}]
+    var viewMonth = new Date(); viewMonth.setDate(1);
     var activeFilter = 'all';
     var editingId = null;
-    var pendingPhotoFile = null;   // 새로 고른 사진
-    var pendingPhotoRemove = false; // 기존 사진 제거 여부
+    var linkRecurringId = null;   // 정기결제에서 등록 시 연결할 id
+    var pendingPhotoFile = null;
+    var pendingPhotoRemove = false;
+    var editingRecurId = null;
 
     // ---------- 유틸 ----------
     function won(n) { return '₩' + Math.round(n).toLocaleString('ko-KR'); }
     function usd(n) { return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-    function monthKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
-    function monthOf(dateStr) { return dateStr.slice(0, 7); }
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function monthKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1); }
+    function monthOf(s) { return s.slice(0, 7); }
     function monthLabel(d) { return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월'; }
-    function todayStr() {
-      var t = new Date();
-      return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
-    }
+    function dateStr(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+    function todayStr() { return dateStr(new Date()); }
     function esc(s) {
-      return String(s == null ? '' : s)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function dayLabel(d) { return d === 99 ? '매월 말일' : '매월 ' + d + '일'; }
+
+    // 정기결제의 해당 달 결제일 (말일/짧은 달 자동 보정)
+    function recurDate(item, mDate) {
+      var y = mDate.getFullYear(), m = mDate.getMonth();
+      var last = new Date(y, m + 1, 0).getDate();
+      var day = item.day_of_month === 99 ? last : Math.min(item.day_of_month, last);
+      return new Date(y, m, day);
+    }
+    function recurRegistered(item, mDate) {
+      var k = monthKey(mDate);
+      return allRows.some(function(r) { return r.recurring_id === item.id && monthOf(r.spent_on) === k; });
+    }
+    // 정기결제를 등록한 달부터만 따진다 (그 전 달까지 "미등록"으로 뜨지 않도록)
+    function recurStarted(item, mDate) {
+      if (!item.created_at) return true;
+      return monthKey(mDate) >= monthOf(item.created_at);
+    }
+    function recurDue(item, mDate) {
+      return recurStarted(item, mDate) && dateStr(recurDate(item, mDate)) <= todayStr();
     }
 
     // ---------- 로그인 ----------
     window.handleLogin = async function(e) {
       if (e) e.preventDefault();
-      var errorMsg = document.getElementById('login-error');
+      var err = document.getElementById('login-error');
       var client = getDb();
-      if (!client) { errorMsg.innerText = '인터넷 접속 문제로 라이브러리가 로드되지 않았습니다.'; return false; }
-
-      errorMsg.style.color = '#eab308';
-      errorMsg.innerText = '로그인 중입니다...';
+      if (!client) { err.innerText = '인터넷 접속 문제로 라이브러리가 로드되지 않았습니다.'; return false; }
+      err.style.color = '#eab308'; err.innerText = '로그인 중입니다...';
       try {
         var res = await client.auth.signInWithPassword({
           email: document.getElementById('admin-email').value,
           password: document.getElementById('admin-password').value
         });
-        if (res.error) {
-          errorMsg.style.color = 'red';
-          errorMsg.innerText = '로그인 실패: ' + res.error.message;
-        } else {
-          errorMsg.innerText = '';
-          showMain();
-        }
-      } catch (err) {
-        errorMsg.style.color = 'red';
-        errorMsg.innerText = '오류 발생: ' + err.message;
-      }
+        if (res.error) { err.style.color = 'red'; err.innerText = '로그인 실패: ' + res.error.message; }
+        else { err.innerText = ''; showMain(); }
+      } catch (ex) { err.style.color = 'red'; err.innerText = '오류 발생: ' + ex.message; }
       return false;
     };
 
     function showMain() {
       document.getElementById('login-section').classList.add('hidden');
       document.getElementById('main-section').classList.remove('hidden');
-      loadExpenses();
+      loadAll();
     }
 
     // ---------- 데이터 로드 ----------
-    async function loadExpenses() {
+    async function loadAll() {
       var client = getDb();
-      var list = document.getElementById('exp-list');
       try {
         var rows = [];
         for (var from = 0; from < 20000; from += 1000) {
           var res = await client.from('expenses').select('*')
-            .order('spent_on', { ascending: false })
-            .order('id', { ascending: false })
+            .order('spent_on', { ascending: false }).order('id', { ascending: false })
             .range(from, from + 999);
           if (res.error) throw res.error;
           rows = rows.concat(res.data || []);
           if (!res.data || res.data.length < 1000) break;
         }
         allRows = rows;
+
+        var pm = await client.from('payment_methods').select('*').order('sort_order').order('id');
+        if (pm.error) throw pm.error;
+        payMethods = pm.data || [];
+
+        var rc = await client.from('recurring_expenses').select('*').order('day_of_month').order('id');
+        if (rc.error) throw rc.error;
+        recurItems = rc.data || [];
+
+        syncPaySelects();
+        renderPayManage();
         renderAll();
       } catch (err) {
-        list.innerHTML = '<p style="color:#b91c1c;font-size:14px;">불러오지 못했습니다: ' + esc(err.message)
-          + '<br />expenses 테이블이 없다면 Supabase SQL을 먼저 실행해주세요.</p>';
+        document.getElementById('exp-list').innerHTML =
+          '<p style="color:#b91c1c;font-size:14px;">불러오지 못했습니다: ' + esc(err.message)
+          + '<br />필요한 테이블이 없다면 Supabase SQL(2026-08-13-expenses-v2.sql)을 먼저 실행해주세요.</p>';
       }
     }
 
     // ---------- 렌더 ----------
     function renderAll() {
       document.getElementById('month-label').innerText = monthLabel(viewMonth);
-      renderHero();
-      renderCats();
-      renderTrend();
-      renderList();
+      renderHero(); renderCats(); renderPays(); renderTrend(); renderRecur(); renderList();
     }
-
     function rowsOfMonth(d) {
       var k = monthKey(d);
       return allRows.filter(function(r) { return monthOf(r.spent_on) === k; });
     }
-    function sumKrw(rows) {
-      return rows.reduce(function(s, r) { return s + Number(r.amount_krw || 0); }, 0);
-    }
+    function sumKrw(rows) { return rows.reduce(function(s, r) { return s + Number(r.amount_krw || 0); }, 0); }
 
     function renderHero() {
       var cur = rowsOfMonth(viewMonth);
-      var prevDate = new Date(viewMonth); prevDate.setMonth(prevDate.getMonth() - 1);
-      var prev = rowsOfMonth(prevDate);
-
-      var total = sumKrw(cur), prevTotal = sumKrw(prev);
+      var pd = new Date(viewMonth); pd.setMonth(pd.getMonth() - 1);
+      var total = sumKrw(cur), prevTotal = sumKrw(rowsOfMonth(pd));
       document.getElementById('hero-label').innerText = monthLabel(viewMonth) + ' 지출';
       document.getElementById('hero-num').innerText = won(total);
-
       var el = document.getElementById('hero-delta');
       if (prevTotal === 0) {
         el.className = 'hero-delta delta-flat';
         el.innerText = cur.length ? '지난달 지출 기록이 없어 비교할 수 없어요' : '이번 달 지출 기록이 없습니다';
         return;
       }
-      var diff = total - prevTotal;
-      var pct = Math.round(Math.abs(diff) / prevTotal * 100);
-      if (diff > 0) {
-        el.className = 'hero-delta delta-up';
-        el.innerText = '▲ 지난달보다 ' + won(diff) + ' 늘었어요 (+' + pct + '%)';
-      } else if (diff < 0) {
-        el.className = 'hero-delta delta-down';
-        el.innerText = '▼ 지난달보다 ' + won(-diff) + ' 줄었어요 (-' + pct + '%)';
-      } else {
-        el.className = 'hero-delta delta-flat';
-        el.innerText = '지난달과 같습니다';
-      }
+      var diff = total - prevTotal, pct = Math.round(Math.abs(diff) / prevTotal * 100);
+      if (diff > 0) { el.className = 'hero-delta delta-up'; el.innerText = '▲ 지난달보다 ' + won(diff) + ' 늘었어요 (+' + pct + '%)'; }
+      else if (diff < 0) { el.className = 'hero-delta delta-down'; el.innerText = '▼ 지난달보다 ' + won(-diff) + ' 줄었어요 (-' + pct + '%)'; }
+      else { el.className = 'hero-delta delta-flat'; el.innerText = '지난달과 같습니다'; }
     }
 
-    function renderCats() {
-      var rows = rowsOfMonth(viewMonth);
-      var host = document.getElementById('cat-bars');
+    function drawBars(hostId, entries, colorFor) {
+      var host = document.getElementById(hostId);
       host.innerHTML = '';
-      if (!rows.length) {
-        host.innerHTML = '<p style="color:var(--text-gray);font-size:14px;">기록이 없습니다.</p>';
-        return;
-      }
-      var byCat = {};
-      rows.forEach(function(r) { byCat[r.category] = (byCat[r.category] || 0) + Number(r.amount_krw || 0); });
-      var total = sumKrw(rows);
-      var entries = Object.keys(byCat).map(function(k) { return [k, byCat[k]]; })
-        .sort(function(a, b) { return b[1] - a[1]; });
+      if (!entries.length) { host.innerHTML = '<p style="color:var(--text-gray);font-size:14px;">기록이 없습니다.</p>'; return; }
       var max = entries[0][1] || 1;
-
       entries.forEach(function(p) {
         var row = document.createElement('div');
         row.className = 'cat-row';
+        row.title = p[0] + ' · ' + won(p[1]);
         row.innerHTML =
           '<span class="cat-name">' + esc(p[0]) + '</span>' +
-          '<span class="cat-track"><span class="cat-fill" style="width:' + Math.max(2, Math.round(p[1] / max * 100)) + '%;background:' + (CATCOLOR[p[0]] || '#9ca3af') + '"></span></span>' +
-          '<span class="cat-amt">' + won(p[1]) + '</span>' +
-          '<span class="cat-pct">' + Math.round(p[1] / total * 100) + '%</span>';
+          '<span class="cat-track"><span class="cat-fill" style="width:' + Math.max(3, Math.round(p[1] / max * 100)) + '%;background:' + colorFor(p[0]) + '"></span></span>' +
+          '<span class="cat-amt">' + won(p[1]) + '</span>';
         host.appendChild(row);
+      });
+    }
+
+    function renderCats() {
+      var by = {};
+      rowsOfMonth(viewMonth).forEach(function(r) { by[r.category] = (by[r.category] || 0) + Number(r.amount_krw || 0); });
+      var entries = Object.keys(by).map(function(k) { return [k, by[k]]; }).sort(function(a, b) { return b[1] - a[1]; });
+      drawBars('cat-bars', entries, function(k) { return CATCOLOR[k] || '#9ca3af'; });
+    }
+
+    function renderPays() {
+      var by = {};
+      rowsOfMonth(viewMonth).forEach(function(r) {
+        var k = r.payment_method || '(미지정)';
+        by[k] = (by[k] || 0) + Number(r.amount_krw || 0);
+      });
+      var entries = Object.keys(by).map(function(k) { return [k, by[k]]; }).sort(function(a, b) { return b[1] - a[1]; });
+      drawBars('pay-bars', entries, function(name) {
+        var i = payMethods.findIndex(function(p) { return p.name === name; });
+        return i >= 0 && i < PAY_PALETTE.length ? PAY_PALETTE[i] : '#9ca3af';
       });
     }
 
@@ -492,14 +600,223 @@
       });
     }
 
+    // ---------- 정기결제 ----------
+    function dueUnregistered() {
+      return recurItems.filter(function(it) {
+        return it.active && recurDue(it, viewMonth) && !recurRegistered(it, viewMonth);
+      });
+    }
+
+    function renderRecur() {
+      var alertHost = document.getElementById('recur-alert-host');
+      alertHost.innerHTML = '';
+      var due = dueUnregistered();
+      if (due.length) {
+        var box = document.createElement('div');
+        box.className = 'recur-alert';
+        box.innerHTML = '<div class="recur-alert-text"><b>' + monthLabel(viewMonth)
+          + ' 아직 등록하지 않은 정기결제가 ' + due.length + '건 있어요</b>결제일이 지난 항목입니다. 확인하고 등록하면 지출 내역에 추가됩니다.</div>';
+        var btn = document.createElement('button');
+        btn.className = 'btn-primary btn-sm'; btn.type = 'button';
+        btn.innerText = due.length + '건 모두 등록';
+        btn.addEventListener('click', function() { registerAllDue(due); });
+        box.appendChild(btn);
+        alertHost.appendChild(box);
+      }
+
+      var host = document.getElementById('recur-list');
+      host.innerHTML = '';
+      if (!recurItems.length) {
+        host.innerHTML = '<p style="color:var(--text-gray);font-size:14px;">등록된 정기결제가 없습니다. 매달 같은 날 나가는 비용(월세·인터넷·통신비 등)을 추가해보세요.</p>';
+        return;
+      }
+      recurItems.forEach(function(it) {
+        var item = document.createElement('div');
+        item.className = 'recur-item' + (it.active ? '' : ' off');
+        var done = recurRegistered(it, viewMonth);
+        var state = !it.active ? '<span class="recur-state state-off">해지됨</span>'
+          : done ? '<span class="recur-state state-done">' + (viewMonth.getMonth() + 1) + '월 등록됨 ✓</span>'
+          : !recurStarted(it, viewMonth) ? '<span class="recur-state state-off">등록 전</span>'
+          : recurDue(it, viewMonth) ? '<span class="recur-state state-todo">' + (viewMonth.getMonth() + 1) + '월 미등록</span>'
+          : '<span class="recur-state state-off">결제일 전</span>';
+        var amt = it.currency === 'USD' ? usd(it.amount) : won(it.amount);
+        item.innerHTML =
+          '<span class="recur-day">' + dayLabel(it.day_of_month) + '</span>' +
+          '<span><span class="recur-name">' + esc(it.name) + '</span>' +
+          '<span class="recur-meta">' + esc(it.category) + (it.payment_method ? ' · ' + esc(it.payment_method) : '') + '</span></span>' +
+          '<span class="recur-amt">' + amt + '</span>' + state;
+
+        if (it.active && !done && recurDue(it, viewMonth)) {
+          var reg = document.createElement('button');
+          reg.className = 'btn-primary btn-sm'; reg.type = 'button'; reg.innerText = '등록';
+          reg.addEventListener('click', function() { startRegisterRecurring(it); });
+          item.appendChild(reg);
+        }
+        var more = document.createElement('button');
+        more.className = 'icon-btn'; more.type = 'button'; more.innerText = '⋯'; more.title = '수정 / 해지 / 삭제';
+        more.addEventListener('click', function() { recurMenu(it); });
+        item.appendChild(more);
+        host.appendChild(item);
+      });
+    }
+
+    function recurMenu(it) {
+      var msg = '"' + it.name + '"\n\n1 = 수정\n2 = ' + (it.active ? '해지(목록에 남기고 알림만 중지)' : '다시 사용')
+        + '\n3 = 완전 삭제\n\n번호를 입력하세요 (취소는 빈칸)';
+      var pick = prompt(msg, '');
+      if (pick === '1') startEditRecur(it);
+      else if (pick === '2') toggleRecurActive(it);
+      else if (pick === '3') deleteRecur(it);
+    }
+
+    async function toggleRecurActive(it) {
+      var res = await getDb().from('recurring_expenses').update({ active: !it.active }).eq('id', it.id);
+      if (res.error) { alert('변경 실패: ' + res.error.message); return; }
+      await loadAll();
+    }
+    async function deleteRecur(it) {
+      if (!confirm('"' + it.name + '" 정기결제를 완전히 삭제할까요?\n이미 등록된 지출 기록은 그대로 남습니다.')) return;
+      var res = await getDb().from('recurring_expenses').delete().eq('id', it.id);
+      if (res.error) { alert('삭제 실패: ' + res.error.message); return; }
+      await loadAll();
+    }
+
+    // 개별 등록 → 지출 폼에 채워서 확인 후 저장
+    function startRegisterRecurring(it) {
+      resetForm();
+      linkRecurringId = it.id;
+      setCategory(it.category);
+      document.getElementById('f-date').value = dateStr(recurDate(it, viewMonth));
+      document.getElementById('f-currency').value = it.currency || 'KRW';
+      document.getElementById('f-amount').value = it.amount;
+      document.getElementById('f-vendor').value = it.name;
+      document.getElementById('f-memo').value = it.memo || '';
+      if (it.payment_method) document.getElementById('f-pay').value = it.payment_method;
+      var t = document.getElementById('form-title');
+      t.innerText = '🔁 ' + it.name + ' — ' + monthLabel(viewMonth) + ' 등록 (금액이 달라졌다면 수정하세요)';
+      t.classList.remove('hidden');
+      syncCurrencyUI();
+      openForm();
+      document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // 일괄 등록
+    async function registerAllDue(due) {
+      var fx = parseFloat(localStorage.getItem('pbu_last_fx') || '0');
+      var usable = [], skipped = [];
+      due.forEach(function(it) {
+        if (it.currency === 'USD' && !(fx > 0)) skipped.push(it.name);
+        else usable.push(it);
+      });
+      if (!usable.length) {
+        alert('달러 정기결제는 환율이 필요합니다.\n항목별 [등록] 버튼으로 환율을 입력해 등록해주세요.');
+        return;
+      }
+      var lines = usable.map(function(it) {
+        var krw = it.currency === 'USD' ? Math.round(it.amount * fx) : Number(it.amount);
+        return '· ' + it.name + '  ' + won(krw) + (it.currency === 'USD' ? ' (환율 ' + fx.toLocaleString('ko-KR') + ')' : '');
+      });
+      var total = usable.reduce(function(s, it) {
+        return s + (it.currency === 'USD' ? Math.round(it.amount * fx) : Number(it.amount));
+      }, 0);
+      var msg = monthLabel(viewMonth) + ' 지출로 아래 ' + usable.length + '건을 등록할까요?\n\n' + lines.join('\n')
+        + '\n\n합계 ' + won(total)
+        + (skipped.length ? '\n\n※ 환율 정보가 없어 제외됨: ' + skipped.join(', ') : '');
+      if (!confirm(msg)) return;
+
+      var payload = usable.map(function(it) {
+        return {
+          spent_on: dateStr(recurDate(it, viewMonth)),
+          category: it.category,
+          amount: Number(it.amount),
+          currency: it.currency || 'KRW',
+          exchange_rate: it.currency === 'USD' ? fx : null,
+          amount_krw: it.currency === 'USD' ? Math.round(it.amount * fx) : Number(it.amount),
+          vendor: it.name,
+          memo: it.memo || null,
+          payment_method: it.payment_method || null,
+          recurring_id: it.id
+        };
+      });
+      var res = await getDb().from('expenses').insert(payload);
+      if (res.error) { alert('등록 실패: ' + res.error.message); return; }
+      await loadAll();
+    }
+
+    // 정기결제 추가/수정 폼
+    function openRecurForm() {
+      document.getElementById('recur-form').classList.remove('hidden');
+      document.getElementById('toggle-recur-form').innerText = '✕ 닫기';
+    }
+    function closeRecurForm() {
+      document.getElementById('recur-form').classList.add('hidden');
+      document.getElementById('toggle-recur-form').innerText = '+ 정기결제 추가';
+    }
+    function resetRecurForm() {
+      editingRecurId = null;
+      document.getElementById('recur-form-title').innerText = '🔁 정기결제 등록';
+      document.getElementById('r-name').value = '';
+      document.getElementById('r-currency').value = 'KRW';
+      document.getElementById('r-amount').value = '';
+      document.getElementById('r-day').value = '1';
+      document.getElementById('r-memo').value = '';
+      document.getElementById('recur-status').innerText = '';
+      setRecurCategory('고정비');
+      if (payMethods.length) document.getElementById('r-pay').value = payMethods[0].name;
+    }
+    function startEditRecur(it) {
+      resetRecurForm();
+      editingRecurId = it.id;
+      document.getElementById('recur-form-title').innerText = '🔁 정기결제 수정';
+      document.getElementById('r-name').value = it.name;
+      document.getElementById('r-currency').value = it.currency || 'KRW';
+      document.getElementById('r-amount').value = it.amount;
+      document.getElementById('r-day').value = String(it.day_of_month);
+      document.getElementById('r-memo').value = it.memo || '';
+      setRecurCategory(it.category);
+      if (it.payment_method) document.getElementById('r-pay').value = it.payment_method;
+      openRecurForm();
+      document.getElementById('recur-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function setRecurCategory(cat) {
+      document.querySelectorAll('#r-cat-picker .cat-opt').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.cat === cat);
+      });
+    }
+    async function saveRecur() {
+      var st = document.getElementById('recur-status');
+      var name = document.getElementById('r-name').value.trim();
+      var amount = parseFloat(document.getElementById('r-amount').value);
+      if (!name) { st.style.color = '#b91c1c'; st.innerText = '항목 이름을 입력해주세요.'; return; }
+      if (!(amount > 0)) { st.style.color = '#b91c1c'; st.innerText = '금액을 입력해주세요.'; return; }
+      var payload = {
+        name: name,
+        amount: amount,
+        currency: document.getElementById('r-currency').value,
+        day_of_month: parseInt(document.getElementById('r-day').value, 10),
+        category: document.querySelector('#r-cat-picker .cat-opt.active').dataset.cat,
+        payment_method: document.getElementById('r-pay').value || null,
+        memo: document.getElementById('r-memo').value.trim() || null
+      };
+      st.style.color = '#eab308'; st.innerText = '저장 중...';
+      var res = editingRecurId
+        ? await getDb().from('recurring_expenses').update(payload).eq('id', editingRecurId)
+        : await getDb().from('recurring_expenses').insert(payload);
+      if (res.error) { st.style.color = '#b91c1c'; st.innerText = '저장 실패: ' + res.error.message; return; }
+      resetRecurForm(); closeRecurForm();
+      await loadAll();
+    }
+
+    // ---------- 지출 목록 ----------
     function renderList() {
       var host = document.getElementById('exp-list');
       host.innerHTML = '';
       var rows = rowsOfMonth(viewMonth).filter(function(r) {
-        return activeFilter === 'all' || r.category === activeFilter;
+        if (activeFilter === 'all') return true;
+        if (activeFilter === '정기') return !!r.recurring_id;
+        return r.category === activeFilter;
       });
       document.getElementById('list-count').innerText = '· ' + rows.length + '건';
-
       if (!rows.length) {
         host.innerHTML = '<p style="color:var(--text-gray);font-size:14px;">해당 조건의 지출이 없습니다.</p>';
         return;
@@ -508,35 +825,38 @@
       rows.forEach(function(r) {
         var item = document.createElement('div');
         item.className = 'exp-item';
-
         var d = r.spent_on.split('-');
-        var amtHtml = '<b>' + won(r.amount_krw) + '</b>';
-        if (r.currency === 'USD') {
-          amtHtml += '<small>' + usd(r.amount) + (r.exchange_rate ? ' · 환율 ' + Number(r.exchange_rate).toLocaleString('ko-KR') : '') + '</small>';
-        }
 
+        // 1행: 제목 → 라벨 → 금액 → ⋯
         var head = document.createElement('div');
         head.className = 'exp-head';
         head.innerHTML =
-          '<span class="exp-date">' + parseInt(d[1]) + '/' + parseInt(d[2]) + '</span>' +
+          '<span class="exp-title">' + esc(r.vendor || '(지출처 없음)') + '</span>' +
+          (r.recurring_id ? '<span class="recur-mark" title="정기결제">🔁</span>' : '') +
           '<span class="badge ' + (BADGE[r.category] || 'b-etc') + '">' + esc(r.category) + '</span>' +
-          '<span class="exp-vendor">' + esc(r.vendor || '(지출처 없음)') + '</span>' +
-          '<span class="exp-amt">' + amtHtml + '</span>';
+          '<span class="exp-amt"><b>' + won(r.amount_krw) + '</b>' +
+          (r.currency === 'USD' ? '<small>' + usd(r.amount) + (r.exchange_rate ? ' · 환율 ' + Number(r.exchange_rate).toLocaleString('ko-KR') : '') + '</small>' : '') +
+          '</span>';
+        var more = document.createElement('button');
+        more.className = 'more-btn'; more.type = 'button'; more.innerText = '⋯';
+        more.title = '수정 / 삭제'; more.setAttribute('aria-label', '수정 또는 삭제');
+        head.appendChild(more);
         item.appendChild(head);
 
-        if (r.memo) {
-          var m = document.createElement('div');
-          m.className = 'exp-memo';
-          m.innerText = r.memo;
-          item.appendChild(m);
-        }
+        // 2행: 날짜 · 결제수단 · 메모
+        var meta = document.createElement('div');
+        meta.className = 'exp-meta';
+        meta.innerText = parseInt(d[1]) + '/' + parseInt(d[2])
+          + (r.payment_method ? ' · ' + r.payment_method : '')
+          + (r.memo ? ' · ' + r.memo : '');
+        item.appendChild(meta);
 
-        var actions = document.createElement('div');
-        actions.className = 'exp-actions';
+        // 3행: 상세 토글 + (⋯ 눌렀을 때만) 수정/삭제
+        var row2 = document.createElement('div');
+        row2.className = 'exp-row2';
 
-        // 광고 상세
-        var hasAd = r.ad_platform || r.ad_target_age || r.ad_radius_km || r.ad_note || r.ad_period;
         var adBox = null;
+        var hasAd = r.ad_platform || r.ad_target_age || r.ad_radius_km || r.ad_note || r.ad_period;
         if (hasAd) {
           adBox = document.createElement('div');
           adBox.className = 'ad-detail hidden';
@@ -549,68 +869,176 @@
           g += '</div>';
           if (r.ad_note) g += '<div class="ad-note">' + esc(r.ad_note) + '</div>';
           adBox.innerHTML = g;
-
           var adBtn = document.createElement('button');
-          adBtn.className = 'link-btn'; adBtn.type = 'button';
-          adBtn.innerText = '▾ 광고 상세 보기';
+          adBtn.className = 'link-btn'; adBtn.type = 'button'; adBtn.innerText = '▾ 광고 상세';
           adBtn.addEventListener('click', function() {
             var open = !adBox.classList.contains('hidden');
             adBox.classList.toggle('hidden');
-            adBtn.innerText = open ? '▾ 광고 상세 보기' : '▴ 광고 상세 접기';
+            adBtn.innerText = open ? '▾ 광고 상세' : '▴ 접기';
           });
-          actions.appendChild(adBtn);
+          row2.appendChild(adBtn);
         }
 
-        // 사진
         var photoBox = null;
         if (r.photo_path) {
           photoBox = document.createElement('div');
           photoBox.className = 'exp-photo hidden';
-          var photoBtn = document.createElement('button');
-          photoBtn.className = 'link-btn'; photoBtn.type = 'button';
-          photoBtn.innerText = '📷 사진 보기';
+          var pBtn = document.createElement('button');
+          pBtn.className = 'link-btn'; pBtn.type = 'button'; pBtn.innerText = '📷 사진';
           var loaded = false;
-          photoBtn.addEventListener('click', async function() {
+          pBtn.addEventListener('click', async function() {
             if (!loaded) {
-              photoBtn.innerText = '불러오는 중...';
-              var signed = await getDb().storage.from(PHOTO_BUCKET).createSignedUrl(r.photo_path, 3600);
-              if (signed.error) { photoBtn.innerText = '사진을 불러오지 못했습니다'; return; }
-              photoBox.innerHTML = '<img src="' + signed.data.signedUrl + '" alt="지출 첨부 사진" />';
+              pBtn.innerText = '불러오는 중...';
+              var s = await getDb().storage.from(PHOTO_BUCKET).createSignedUrl(r.photo_path, 3600);
+              if (s.error) { pBtn.innerText = '사진 오류'; return; }
+              photoBox.innerHTML = '<img src="' + s.data.signedUrl + '" alt="지출 첨부 사진" />';
               loaded = true;
             }
             var open = !photoBox.classList.contains('hidden');
             photoBox.classList.toggle('hidden');
-            photoBtn.innerText = open ? '📷 사진 보기' : '📷 사진 접기';
+            pBtn.innerText = open ? '📷 사진' : '📷 접기';
           });
-          actions.appendChild(photoBtn);
+          row2.appendChild(pBtn);
         }
 
-        var editBtn = document.createElement('button');
-        editBtn.className = 'link-btn'; editBtn.type = 'button'; editBtn.innerText = '✏️ 수정';
-        editBtn.addEventListener('click', function() { startEdit(r); });
-        actions.appendChild(editBtn);
+        var actions = document.createElement('span');
+        actions.className = 'row-actions hidden';
+        var ed = document.createElement('button');
+        ed.className = 'link-btn'; ed.type = 'button'; ed.innerText = '수정';
+        ed.addEventListener('click', function() { startEdit(r); });
+        var dl = document.createElement('button');
+        dl.className = 'link-btn danger'; dl.type = 'button'; dl.innerText = '삭제';
+        dl.addEventListener('click', function() { removeExpense(r); });
+        actions.appendChild(ed); actions.appendChild(dl);
+        row2.appendChild(actions);
 
-        var delBtn = document.createElement('button');
-        delBtn.className = 'link-btn danger'; delBtn.type = 'button'; delBtn.innerText = '🗑 삭제';
-        delBtn.addEventListener('click', function() { removeExpense(r); });
-        actions.appendChild(delBtn);
+        var detailOnly = row2.children.length === 1; // 상세 버튼이 없으면 평소엔 행 자체를 숨김
+        if (detailOnly) row2.classList.add('hidden');
+        more.addEventListener('click', function() {
+          actions.classList.toggle('hidden');
+          if (detailOnly) row2.classList.toggle('hidden', actions.classList.contains('hidden'));
+        });
 
-        item.appendChild(actions);
+        item.appendChild(row2);
         if (adBox) item.appendChild(adBox);
         if (photoBox) item.appendChild(photoBox);
         host.appendChild(item);
       });
     }
 
-    // ---------- 폼 ----------
+    // ---------- 결제수단 ----------
+    function syncPaySelects() {
+      ['f-pay', 'r-pay'].forEach(function(id) {
+        var sel = document.getElementById(id);
+        var cur = sel.value;
+        sel.innerHTML = '';
+        payMethods.forEach(function(p) {
+          var o = document.createElement('option');
+          o.value = p.name; o.textContent = p.name;
+          sel.appendChild(o);
+        });
+        if (cur && payMethods.some(function(p) { return p.name === cur; })) sel.value = cur;
+      });
+    }
+
+    function renderPayManage() {
+      var host = document.getElementById('pay-mlist');
+      host.innerHTML = '';
+      payMethods.forEach(function(p) {
+        var row = document.createElement('div');
+        row.className = 'pay-mrow';
+        var label = document.createElement('span');
+        label.className = 'pay-mname'; label.innerText = p.name;
+        var edit = document.createElement('button');
+        edit.className = 'icon-btn'; edit.type = 'button'; edit.innerText = '✏️'; edit.title = '이름 바꾸기';
+        var del = document.createElement('button');
+        del.className = 'icon-btn'; del.type = 'button'; del.innerText = '🗑'; del.title = '목록에서 삭제';
+
+        edit.addEventListener('click', function() {
+          row.innerHTML = '';
+          var input = document.createElement('input');
+          input.type = 'text'; input.value = p.name;
+          var ok = document.createElement('button');
+          ok.className = 'icon-btn'; ok.type = 'button'; ok.innerText = '✔'; ok.title = '저장';
+          var no = document.createElement('button');
+          no.className = 'icon-btn'; no.type = 'button'; no.innerText = '✕'; no.title = '취소';
+          ok.addEventListener('click', function() { renamePayMethod(p, input.value.trim()); });
+          no.addEventListener('click', renderPayManage);
+          input.addEventListener('keydown', function(e) { if (e.key === 'Enter') renamePayMethod(p, input.value.trim()); });
+          row.appendChild(input); row.appendChild(ok); row.appendChild(no);
+          input.focus();
+        });
+        del.addEventListener('click', function() { deletePayMethod(p); });
+
+        row.appendChild(label); row.appendChild(edit); row.appendChild(del);
+        host.appendChild(row);
+      });
+    }
+
+    async function addPayMethod() {
+      var input = document.getElementById('pay-new');
+      var st = document.getElementById('pay-status');
+      var name = input.value.trim();
+      if (!name) return;
+      if (payMethods.some(function(p) { return p.name === name; })) {
+        st.style.color = '#b91c1c'; st.innerText = '이미 있는 결제수단입니다.'; return;
+      }
+      st.style.color = '#eab308'; st.innerText = '추가 중...';
+      var maxOrder = payMethods.reduce(function(m, p) { return Math.max(m, p.sort_order || 0); }, 0);
+      var res = await getDb().from('payment_methods').insert({ name: name, sort_order: maxOrder + 1 });
+      if (res.error) { st.style.color = '#b91c1c'; st.innerText = '추가 실패: ' + res.error.message; return; }
+      input.value = ''; st.innerText = '';
+      await reloadPayMethods();
+    }
+
+    async function renamePayMethod(p, newName) {
+      var st = document.getElementById('pay-status');
+      if (!newName || newName === p.name) { renderPayManage(); return; }
+      if (payMethods.some(function(x) { return x.name === newName; })) {
+        st.style.color = '#b91c1c'; st.innerText = '이미 있는 이름입니다.'; renderPayManage(); return;
+      }
+      st.style.color = '#eab308'; st.innerText = '이름 바꾸는 중...';
+      var client = getDb();
+      var r1 = await client.from('payment_methods').update({ name: newName }).eq('id', p.id);
+      if (r1.error) { st.style.color = '#b91c1c'; st.innerText = '변경 실패: ' + r1.error.message; return; }
+      // 기존 기록의 결제수단 이름도 함께 바꿔서 집계가 흩어지지 않게 한다
+      await client.from('expenses').update({ payment_method: newName }).eq('payment_method', p.name);
+      await client.from('recurring_expenses').update({ payment_method: newName }).eq('payment_method', p.name);
+      st.innerText = '';
+      await loadAll();
+    }
+
+    async function deletePayMethod(p) {
+      var used = allRows.filter(function(r) { return r.payment_method === p.name; }).length;
+      var msg = '"' + p.name + '"을 결제수단 목록에서 지울까요?';
+      if (used) msg += '\n\n이미 기록된 지출 ' + used + '건에는 그대로 남습니다(장부는 바뀌지 않습니다).';
+      if (!confirm(msg)) return;
+      var res = await getDb().from('payment_methods').delete().eq('id', p.id);
+      if (res.error) { alert('삭제 실패: ' + res.error.message); return; }
+      await reloadPayMethods();
+    }
+
+    async function reloadPayMethods() {
+      var pm = await getDb().from('payment_methods').select('*').order('sort_order').order('id');
+      if (!pm.error) {
+        payMethods = pm.data || [];
+        syncPaySelects(); renderPayManage(); renderPays();
+      }
+    }
+
+    // ---------- 지출 폼 ----------
     function selectedCategory() {
       var el = document.querySelector('#cat-picker .cat-opt.active');
       return el ? el.dataset.cat : '기타';
     }
     function setCategory(cat) {
+      var found = false;
       document.querySelectorAll('#cat-picker .cat-opt').forEach(function(b) {
-        b.classList.toggle('active', b.dataset.cat === cat);
+        var on = b.dataset.cat === cat;
+        b.classList.toggle('active', on);
+        if (on) found = true;
       });
+      if (!found) document.querySelector('#cat-picker .cat-opt[data-cat="기타"]').classList.add('active');
       document.getElementById('ad-fields').classList.toggle('hidden', cat !== '광고비');
     }
     function syncCurrencyUI() {
@@ -622,10 +1050,10 @@
       var amt = parseFloat(document.getElementById('f-amount').value);
       var fx = parseFloat(document.getElementById('f-fx').value);
       var hint = document.getElementById('fx-hint');
-      if (amt > 0 && fx > 0) hint.innerText = '원화 환산 ' + won(amt * fx) + ' — 합계에 이 금액이 반영됩니다';
-      else hint.innerText = '원화로 환산해 합계에 반영됩니다';
+      hint.innerText = (amt > 0 && fx > 0)
+        ? '원화 환산 ' + won(amt * fx) + ' — 합계에 이 금액이 반영됩니다'
+        : '원화로 환산해 합계에 반영됩니다';
     }
-
     function openForm() {
       document.getElementById('form-card').classList.remove('hidden');
       document.getElementById('toggle-form').innerText = '✕ 닫기';
@@ -635,9 +1063,9 @@
       document.getElementById('toggle-form').innerText = '+ 지출 추가';
     }
     function resetForm() {
-      editingId = null;
-      pendingPhotoFile = null;
-      pendingPhotoRemove = false;
+      editingId = null; linkRecurringId = null;
+      pendingPhotoFile = null; pendingPhotoRemove = false;
+      document.getElementById('form-title').classList.add('hidden');
       setCategory('광고비');
       document.getElementById('f-date').value = todayStr();
       document.getElementById('f-currency').value = 'KRW';
@@ -656,12 +1084,13 @@
       document.getElementById('photo-clear-btn').classList.add('hidden');
       document.getElementById('form-status').innerText = '';
       document.getElementById('save-btn').innerText = '저장';
+      if (payMethods.length) document.getElementById('f-pay').value = payMethods[0].name;
       syncCurrencyUI();
     }
-
     function startEdit(r) {
       resetForm();
       editingId = r.id;
+      linkRecurringId = r.recurring_id || null;
       setCategory(r.category);
       document.getElementById('f-date').value = r.spent_on;
       document.getElementById('f-currency').value = r.currency || 'KRW';
@@ -669,6 +1098,9 @@
       if (r.exchange_rate) document.getElementById('f-fx').value = r.exchange_rate;
       document.getElementById('f-vendor').value = r.vendor || '';
       document.getElementById('f-memo').value = r.memo || '';
+      if (r.payment_method && payMethods.some(function(p) { return p.name === r.payment_method; })) {
+        document.getElementById('f-pay').value = r.payment_method;
+      }
       if (r.ad_platform) document.getElementById('f-platform').value = r.ad_platform;
       document.getElementById('f-age').value = r.ad_target_age || '';
       if (r.ad_target_gender) document.getElementById('f-gender').value = r.ad_target_gender;
@@ -680,8 +1112,7 @@
         document.getElementById('photo-clear-btn').classList.remove('hidden');
       }
       document.getElementById('save-btn').innerText = '수정 저장';
-      syncCurrencyUI();
-      openForm();
+      syncCurrencyUI(); openForm();
       document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -698,19 +1129,15 @@
 
       if (!spentOn) { status.style.color = '#b91c1c'; status.innerText = '날짜를 입력해주세요.'; return; }
       if (!(amount > 0)) { status.style.color = '#b91c1c'; status.innerText = '금액을 입력해주세요.'; return; }
-      if (currency === 'USD' && !(fx > 0)) {
-        status.style.color = '#b91c1c'; status.innerText = '달러 지출은 환율을 입력해주세요.'; return;
-      }
+      if (currency === 'USD' && !(fx > 0)) { status.style.color = '#b91c1c'; status.innerText = '달러 지출은 환율을 입력해주세요.'; return; }
 
       btn.disabled = true;
-      status.style.color = '#eab308';
-      status.innerText = '저장 중...';
+      status.style.color = '#eab308'; status.innerText = '저장 중...';
 
       try {
         var existing = editingId ? allRows.find(function(x) { return x.id === editingId; }) : null;
         var photoPath = existing ? existing.photo_path : null;
 
-        // 사진 처리
         if (pendingPhotoFile) {
           status.innerText = '사진 업로드 중...';
           var ext = (pendingPhotoFile.name.split('.').pop() || 'jpg').toLowerCase();
@@ -734,7 +1161,9 @@
           amount_krw: currency === 'USD' ? Math.round(amount * fx) : amount,
           vendor: document.getElementById('f-vendor').value.trim() || null,
           memo: document.getElementById('f-memo').value.trim() || null,
+          payment_method: document.getElementById('f-pay').value || null,
           photo_path: photoPath,
+          recurring_id: linkRecurringId,
           ad_platform: isAd ? document.getElementById('f-platform').value : null,
           ad_target_age: isAd ? (document.getElementById('f-age').value.trim() || null) : null,
           ad_target_gender: isAd ? document.getElementById('f-gender').value : null,
@@ -750,13 +1179,11 @@
 
         if (currency === 'USD') localStorage.setItem('pbu_last_fx', String(fx));
 
-        // 저장한 달로 이동해서 결과를 바로 보여준다
         var saved = new Date(spentOn + 'T00:00:00');
         viewMonth = new Date(saved.getFullYear(), saved.getMonth(), 1);
 
-        resetForm();
-        closeForm();
-        await loadExpenses();
+        resetForm(); closeForm();
+        await loadAll();
       } catch (err) {
         status.style.color = '#b91c1c';
         status.innerText = '저장 실패: ' + err.message;
@@ -766,75 +1193,93 @@
     }
 
     async function removeExpense(r) {
-      if (!confirm(r.spent_on + ' · ' + (r.vendor || r.category) + ' · ' + won(r.amount_krw) + '\n\n이 지출을 삭제할까요? 되돌릴 수 없습니다.')) return;
+      if (!confirm(r.spent_on + ' · ' + (r.vendor || r.category) + ' · ' + won(r.amount_krw)
+        + '\n\n이 지출을 삭제할까요? 되돌릴 수 없습니다.')) return;
       var client = getDb();
       try {
         var res = await client.from('expenses').delete().eq('id', r.id);
         if (res.error) throw res.error;
         if (r.photo_path) await client.storage.from(PHOTO_BUCKET).remove([r.photo_path]);
-        await loadExpenses();
-      } catch (err) {
-        alert('삭제 실패: ' + err.message);
-      }
+        await loadAll();
+      } catch (err) { alert('삭제 실패: ' + err.message); }
     }
 
     // ---------- 이벤트 ----------
     document.getElementById('toggle-form').addEventListener('click', function() {
       var c = document.getElementById('form-card');
-      if (c.classList.contains('hidden')) { resetForm(); openForm(); }
-      else closeForm();
+      if (c.classList.contains('hidden')) { resetForm(); openForm(); } else closeForm();
     });
     document.getElementById('cancel-btn').addEventListener('click', function() { resetForm(); closeForm(); });
     document.getElementById('save-btn').addEventListener('click', saveExpense);
-
     document.getElementById('cat-picker').addEventListener('click', function(ev) {
-      var b = ev.target.closest('.cat-opt');
-      if (b) setCategory(b.dataset.cat);
+      var b = ev.target.closest('.cat-opt'); if (b) setCategory(b.dataset.cat);
+    });
+    document.getElementById('r-cat-picker').addEventListener('click', function(ev) {
+      var b = ev.target.closest('.cat-opt'); if (b) setRecurCategory(b.dataset.cat);
     });
     document.getElementById('f-currency').addEventListener('change', syncCurrencyUI);
     document.getElementById('f-amount').addEventListener('input', updateFxHint);
     document.getElementById('f-fx').addEventListener('input', updateFxHint);
 
+    document.getElementById('pay-manage-toggle').addEventListener('click', function() {
+      var p = document.getElementById('pay-manage');
+      p.classList.toggle('hidden');
+      this.innerText = p.classList.contains('hidden') ? '관리' : '닫기';
+    });
+    document.getElementById('pay-add-btn').addEventListener('click', addPayMethod);
+    document.getElementById('pay-new').addEventListener('keydown', function(e) { if (e.key === 'Enter') addPayMethod(); });
+
     document.getElementById('photo-pick-btn').addEventListener('click', function() {
       document.getElementById('f-photo-file').click();
     });
     document.getElementById('f-photo-file').addEventListener('change', function(e) {
-      var f = e.target.files[0];
-      if (!f) return;
-      pendingPhotoFile = f;
-      pendingPhotoRemove = false;
+      var f = e.target.files[0]; if (!f) return;
+      pendingPhotoFile = f; pendingPhotoRemove = false;
       document.getElementById('photo-name').innerText = f.name;
       document.getElementById('photo-clear-btn').classList.remove('hidden');
     });
     document.getElementById('photo-clear-btn').addEventListener('click', function() {
-      pendingPhotoFile = null;
-      pendingPhotoRemove = true;
+      pendingPhotoFile = null; pendingPhotoRemove = true;
       document.getElementById('f-photo-file').value = '';
       document.getElementById('photo-name').innerText = '선택된 파일 없음';
       this.classList.add('hidden');
     });
 
-    document.getElementById('filter-chips').addEventListener('click', function(ev) {
-      var b = ev.target.closest('.chip');
-      if (!b) return;
-      this.querySelectorAll('.chip').forEach(function(x) { x.classList.remove('active'); });
-      b.classList.add('active');
-      activeFilter = b.dataset.f;
-      renderList();
+    document.getElementById('toggle-recur-form').addEventListener('click', function() {
+      var c = document.getElementById('recur-form');
+      if (c.classList.contains('hidden')) { resetRecurForm(); openRecurForm(); } else closeRecurForm();
     });
+    document.getElementById('recur-cancel').addEventListener('click', function() { resetRecurForm(); closeRecurForm(); });
+    document.getElementById('recur-save').addEventListener('click', saveRecur);
 
+    document.getElementById('filter-chips').addEventListener('click', function(ev) {
+      var b = ev.target.closest('.chip'); if (!b) return;
+      this.querySelectorAll('.chip').forEach(function(x) { x.classList.remove('active'); });
+      b.classList.add('active'); activeFilter = b.dataset.f; renderList();
+    });
     document.getElementById('prev-month').addEventListener('click', function() {
-      viewMonth.setMonth(viewMonth.getMonth() - 1);
-      renderAll();
+      viewMonth.setMonth(viewMonth.getMonth() - 1); renderAll();
     });
     document.getElementById('next-month').addEventListener('click', function() {
-      viewMonth.setMonth(viewMonth.getMonth() + 1);
-      renderAll();
+      viewMonth.setMonth(viewMonth.getMonth() + 1); renderAll();
     });
 
     var hb = document.querySelector('.hamburger');
     var nl = document.querySelector('.nav-links');
     if (hb && nl) hb.addEventListener('click', function() { nl.classList.toggle('active'); });
+
+    // 결제일 선택지 채우기
+    (function() {
+      var sel = document.getElementById('r-day');
+      for (var i = 1; i <= 31; i++) {
+        var o = document.createElement('option');
+        o.value = String(i); o.textContent = i + '일';
+        sel.appendChild(o);
+      }
+      var last = document.createElement('option');
+      last.value = '99'; last.textContent = '말일';
+      sel.appendChild(last);
+    })();
 
     // 이미 로그인되어 있으면 바로 진입
     (async function() {

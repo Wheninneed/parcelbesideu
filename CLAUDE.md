@@ -56,10 +56,15 @@ Supabase anon key는 클라이언트 코드에 노출되는 것이 정상이며,
 | `site_settings` (영업시간·FAQ·쇼핑몰) | 읽기만 | 읽기·쓰기 |
 | `site_visits` (방문 통계) | 기록(insert)만 | 읽기 |
 | `expenses` (운영비 지출) | 접근 전면 차단 | 전체 읽기·쓰기 |
+| `payment_methods` (결제수단 목록) | 접근 전면 차단 | 전체 읽기·쓰기 |
+| `recurring_expenses` (정기결제) | 접근 전면 차단 | 전체 읽기·쓰기 |
 
 저장소(Storage): `images`는 공개(쇼핑몰 로고용), `expense-photos`는 **비공개** — 지출 첨부 사진은 서명 링크(`createSignedUrl`)로만 열람
 
-적용 SQL: `sql/2026-08-13-enable-rls.sql`, `sql/2026-07-21-site-visits.sql`, `sql/2026-08-13-expenses.sql`
+적용 SQL: `sql/2026-08-13-enable-rls.sql`, `sql/2026-07-21-site-visits.sql`, `sql/2026-08-13-expenses.sql`, `sql/2026-08-13-expenses-v2.sql`
+
+지출 분류는 5종 고정: 광고비 / 인쇄물 / 사무실 비품 / 고정비 / 기타.
+정기결제는 **자동 기록하지 않는다** — 결제일이 지나면 화면에 알림을 띄우고 사장이 확인 후 등록하는 방식(실제로 나가지 않은 돈이 장부에 쌓이는 것을 방지). 등록한 달(`created_at`) 이전 달은 "미등록"으로 표시하지 않는다.
 
 주의사항:
 - `message_templates`에는 고객 이름·주소·전화번호·현관 출입코드가 들어 있다. 이 테이블을 비로그인에 열어주는 변경은 절대 금지
