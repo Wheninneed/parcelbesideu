@@ -46,6 +46,23 @@
 - 읽을 때는 반드시 `try { JSON.parse(t.content) } catch { ... }` 폴백 유지 (구버전 평문 데이터 호환)
 - 이 구조를 바꾸는 스키마 마이그레이션은 하지 않는다
 
+## 보안 모델 (RLS) — 2026-08-13 적용
+
+Supabase anon key는 클라이언트 코드에 노출되는 것이 정상이며, **실제 보호는 전적으로 RLS가 담당**한다. 모든 테이블은 RLS가 켜져 있어야 하고, 새 테이블을 만들 때도 반드시 정책을 함께 정의한다.
+
+| 테이블 | 비로그인(anon) | 로그인(authenticated) |
+|---|---|---|
+| `message_templates` (고객 주소록·PII) | 접근 전면 차단 | 전체 읽기·쓰기 |
+| `site_settings` (영업시간·FAQ·쇼핑몰) | 읽기만 | 읽기·쓰기 |
+| `site_visits` (방문 통계) | 기록(insert)만 | 읽기 |
+
+적용 SQL: `sql/2026-08-13-enable-rls.sql`, `sql/2026-07-21-site-visits.sql`
+
+주의사항:
+- `message_templates`에는 고객 이름·주소·전화번호·현관 출입코드가 들어 있다. 이 테이블을 비로그인에 열어주는 변경은 절대 금지
+- 관리자 페이지(`admin*.html`)는 로그인 세션 확인 후에만 데이터를 로드하는 구조 — 이 순서를 깨지 말 것
+- 새 테이블 추가 시 `alter table ... enable row level security` + 정책을 같은 SQL에 포함
+
 ## 파일 구조
 
 ```
