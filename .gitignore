@@ -1,0 +1,22 @@
+# Local QA, screenshots, reverse patches and caches
+.local/
+.cache/
+
+# Local environment and credential files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*service-account*.json
+
+# Tool/install output
+node_modules/
+.vercel/
+*.log
+*.tmp
+*.bak
+
+# OS metadata
+.DS_Store
+Thumbs.db

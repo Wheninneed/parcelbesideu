@@ -83,6 +83,8 @@
     </div>
   </div>
 
+  <script src="assets/vendor/dompurify-3.4.13.min.js" integrity="sha256-mrPUTXPD45R/mrcuDwvBXH8ZMdYLNluiYfyF/lkBPFY="></script>
+  <script src="faq-content.js?v=1"></script>
   <script>
     const SUPABASE_URL = 'https://ankpcatdvcumwdjwptvp.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua3BjYXRkdmN1bXdkandwdHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjgsImV4cCI6MjA5MTg2MTA2OH0.lFN2Lov4Wp6gWLeXIIpcViz8Yv-V5i-iR0sLyJiAros';
@@ -193,23 +195,30 @@
         const li = document.createElement('li');
         li.className = 'faq-list-item';
         
-        // Strip HTML tags for preview using browser API safely
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = item.answer;
-        const answerPreview = tempDiv.textContent || tempDiv.innerText || "";
-
-        li.innerHTML = `
-          <div class="faq-list-content">
-            <div class="faq-list-q">${i+1}. ${item.question}</div>
-            <div class="faq-list-a">${answerPreview}</div>
-          </div>
-          <div class="faq-list-actions">
-            ${i > 0 ? `<button onclick="moveFaq(${i}, -1)">↑</button>` : ''}
-            ${i < faqs.length - 1 ? `<button onclick="moveFaq(${i}, 1)">↓</button>` : ''}
-            <button onclick="editFaq(${i})">✏️</button>
-            <button class="btn-delete" onclick="deleteFaq(${i})">✕</button>
-          </div>
-        `;
+        const content = document.createElement('div');
+        content.className = 'faq-list-content';
+        const question = document.createElement('div');
+        question.className = 'faq-list-q';
+        question.textContent = `${i+1}. ${item.question}`;
+        const preview = document.createElement('div');
+        preview.className = 'faq-list-a';
+        preview.textContent = window.ParcelFaqContent
+          ? window.ParcelFaqContent.plainText(item.answer) : item.answer;
+        content.append(question, preview);
+        const actions = document.createElement('div');
+        actions.className = 'faq-list-actions';
+        function addAction(label, handler, className) {
+          const button = document.createElement('button');
+          button.textContent = label;
+          if (className) button.className = className;
+          button.addEventListener('click', handler);
+          actions.appendChild(button);
+        }
+        if (i > 0) addAction('↑', () => window.moveFaq(i, -1));
+        if (i < faqs.length - 1) addAction('↓', () => window.moveFaq(i, 1));
+        addAction('✏️', () => window.editFaq(i));
+        addAction('✕', () => window.deleteFaq(i), 'btn-delete');
+        li.append(content, actions);
         listEl.appendChild(li);
       });
     }
@@ -244,7 +253,8 @@
       const item = faqs[index];
       
       document.getElementById('faq-q-input').value = item.question;
-      quill.root.innerHTML = item.answer;
+      if (window.ParcelFaqContent) window.ParcelFaqContent.render(quill.root, item.answer);
+      else quill.setText(item.answer == null ? '' : String(item.answer));
       
       document.getElementById('form-title').innerText = 'Edit FAQ';
       document.getElementById('save-faq-btn').innerText = 'Save Edit';

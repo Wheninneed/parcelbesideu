@@ -132,7 +132,19 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
           var parsed = JSON.parse(item.content);
           var dayIds = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
           var dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-          var html = '';
+          var hours = document.createDocumentFragment();
+          function addHoursRow(day, time) {
+            var row = document.createElement('li');
+            row.className = 'hours-row';
+            var dayLabel = document.createElement('span');
+            dayLabel.className = 'hours-day';
+            dayLabel.textContent = day;
+            var timeLabel = document.createElement('span');
+            timeLabel.className = 'hours-time';
+            timeLabel.textContent = time;
+            row.append(dayLabel, timeLabel);
+            hours.appendChild(row);
+          }
           var currentGroup = [];
           var prevStr = null;
           var prevClosed = false;
@@ -152,7 +164,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 if (title === 'FRI') title = 'FRIDAY';
                 if (title === 'SAT') title = 'SATURDAY';
                 if (title === 'SUN') title = 'SUNDAY';
-                html += '<li class="hours-row"><span class="hours-day">' + title + '</span><span class="hours-time">' + prevStr + '</span></li>';
+                addHoursRow(title, prevStr);
               }
               currentGroup = [dayLabels[i]];
               prevStr = str;
@@ -166,10 +178,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             if (lastTitle === 'FRI') lastTitle = 'FRIDAY';
             if (lastTitle === 'SAT') lastTitle = 'SATURDAY';
             if (lastTitle === 'SUN') lastTitle = 'SUNDAY';
-            html += '<li class="hours-row"><span class="hours-day">' + lastTitle + '</span><span class="hours-time">' + prevStr + '</span></li>';
+            addHoursRow(lastTitle, prevStr);
           }
-          html += '<li class="hours-note">📌 Regardless of business hours, we are taking requests &amp; inquiries 24/7</li>';
-          businessHoursDisplay.innerHTML = html;
+          var hoursNote = document.createElement('li');
+          hoursNote.className = 'hours-note';
+          hoursNote.textContent = '📌 Regardless of business hours, we are taking requests & inquiries 24/7';
+          hours.appendChild(hoursNote);
+          businessHoursDisplay.replaceChildren(hours);
 
           // Holiday Alert
           if (holidayAlertContainer && parsed.holidays && parsed.holidays.length > 0) {
@@ -218,30 +233,33 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 return parseInt(parts[1]) + '/' + parseInt(parts[2]);
               }
 
-              var rangeTexts = ranges.map(function(r) {
-                if (r.start === r.end) {
-                  return '<b>' + fmtDate(r.start) + '</b>';
-                } else {
-                  return '<b>' + fmtDate(r.start) + ' ~ ' + fmtDate(r.end) + '</b>';
-                }
+              var notice = document.createElement('div');
+              notice.style.cssText = 'background-color: #fef2f2; color: #991b1b; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #f87171; font-size: 18px;';
+              var noticeTitle = document.createElement('h4');
+              noticeTitle.style.cssText = 'margin: 0 0 8px 0; font-size: 20px;';
+              noticeTitle.textContent = '⚠️ Notice: Temporary Closure';
+              notice.append(noticeTitle, document.createTextNode('We will be closed on: '));
+              var dates = document.createElement('span');
+              ranges.forEach(function(range, index) {
+                if (index) dates.appendChild(document.createTextNode(', '));
+                var date = document.createElement('b');
+                date.textContent = fmtDate(range.start) + (range.start === range.end ? '' : ' ~ ' + fmtDate(range.end));
+                dates.appendChild(date);
               });
-
-              var reasonLine = '';
+              notice.appendChild(dates);
               if (reasons.length > 0) {
-                reasonLine = '<div style="margin-top: 6px; font-size: 16px; opacity: 0.85;">' + reasons.join(' / ') + '</div>';
+                var reasonLine = document.createElement('div');
+                reasonLine.style.cssText = 'margin-top: 6px; font-size: 16px; opacity: 0.85;';
+                reasonLine.textContent = reasons.join(' / ');
+                notice.appendChild(reasonLine);
               }
-
-              holidayAlertContainer.innerHTML =
-                '<div style="background-color: #fef2f2; color: #991b1b; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #f87171; font-size: 18px;">'
-                + '<h4 style="margin: 0 0 8px 0; font-size: 20px;">⚠️ Notice: Temporary Closure</h4>'
-                + 'We will be closed on: <span>' + rangeTexts.join(', ') + '</span>'
-                + reasonLine
-                + '</div>';
+              holidayAlertContainer.replaceChildren(notice);
             }
           }
         } catch(e) {
-          // Fallback: show raw content
-          businessHoursDisplay.innerHTML = '<li>' + item.content + '</li>';
+          var fallbackHours = document.createElement('li');
+          fallbackHours.textContent = item.content;
+          businessHoursDisplay.replaceChildren(fallbackHours);
         }
       }
 
@@ -293,10 +311,21 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
   });
 
   // === STORE RENDERING FUNCTIONS ===
-  function getLogoUrl(store) {
-    if (store.logo) return store.logo;
+  function getSafeHttpUrl(value) {
+    if (typeof value !== 'string' || /[\u0000-\u001f\u007f]/.test(value)) return '';
     try {
-      var domain = new URL(store.url).hostname;
+      var url = new URL(value.trim());
+      return /^https?:$/.test(url.protocol) && !url.username && !url.password ? url.href : '';
+    } catch(e) {
+      return '';
+    }
+  }
+
+  function getLogoUrl(store) {
+    var logo = getSafeHttpUrl(store.logo);
+    if (logo) return logo;
+    try {
+      var domain = new URL(getSafeHttpUrl(store.url)).hostname;
       domain = domain.replace(/^www\./, '');
       return 'https://logos.hunter.io/' + domain;
     } catch(e) {
@@ -306,21 +335,29 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
   function createStoreCard(store, isFeatured) {
     var a = document.createElement('a');
-    a.href = store.url;
-    a.target = '_blank';
+    var storeUrl = getSafeHttpUrl(store.url);
+    if (storeUrl) {
+      a.href = storeUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    } else {
+      a.setAttribute('aria-disabled', 'true');
+    }
     a.className = 'store-card' + (isFeatured ? ' featured' : '');
 
     var logoWrap = document.createElement('div');
     logoWrap.className = 'store-logo-wrap';
     var img = document.createElement('img');
-    img.src = getLogoUrl(store);
+    var logoUrl = getLogoUrl(store);
+    if (logoUrl) img.src = logoUrl;
+    else img.style.display = 'none';
     img.alt = store.name;
     img.onerror = function() {
       // If Hunter.io fails, fallback to Google Favicon API (as a 2nd safety net)
       if (this.src.indexOf('logos.hunter.io') !== -1) {
         try {
-          var domain = new URL(store.url).hostname;
-          this.src = 'https://www.google.com/s2/favicons?domain=' + domain + '&sz=64';
+          var domain = new URL(storeUrl).hostname;
+          this.src = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=64';
           this.classList.add('favicon-fallback');
         } catch(e) {
           this.style.display = 'none';
@@ -436,19 +473,30 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
       var questionBtn = document.createElement('button');
       questionBtn.className = 'faq-question';
-      questionBtn.innerHTML = 
-        '<div class="faq-q-icon">Q</div>' +
-        '<div class="faq-question-text">' + faq.question + '</div>' +
-        '<div class="faq-toggle-icon">▼</div>';
+      var questionIcon = document.createElement('div');
+      questionIcon.className = 'faq-q-icon';
+      questionIcon.textContent = 'Q';
+      var questionText = document.createElement('div');
+      questionText.className = 'faq-question-text';
+      questionText.textContent = faq.question;
+      var toggleIcon = document.createElement('div');
+      toggleIcon.className = 'faq-toggle-icon';
+      toggleIcon.textContent = '▼';
+      questionBtn.append(questionIcon, questionText, toggleIcon);
 
       var answerDiv = document.createElement('div');
       answerDiv.className = 'faq-answer';
       
       var answerInner = document.createElement('div');
       answerInner.className = 'faq-answer-inner';
-      answerInner.innerHTML = 
-        '<div class="faq-a-icon">A</div>' +
-        '<div class="faq-answer-content">' + faq.answer + '</div>';
+      var answerIcon = document.createElement('div');
+      answerIcon.className = 'faq-a-icon';
+      answerIcon.textContent = 'A';
+      var answerContent = document.createElement('div');
+      answerContent.className = 'faq-answer-content';
+      if (window.ParcelFaqContent) window.ParcelFaqContent.render(answerContent, faq.answer);
+      else answerContent.textContent = faq.answer;
+      answerInner.append(answerIcon, answerContent);
         
       answerDiv.appendChild(answerInner);
 

@@ -1,5 +1,8 @@
 # Parcel Beside U
 
+> 2026-11-01 Codex 보완: 현재 작업 루트는 C:\Users\crush\.claude\workspace\parcel-beside-u 입니다. 작업·승인 기준은 AGENTS.md를 먼저 따릅니다. 방문 통계·지출 기능을 보존하며 승인된 보안 보완과 관리자 UI 수정을 병합했습니다. 변경·검증·복구·배포 제외 검토안은 SECURITY_REVIEW.md에 기록했습니다. 운영 DB 정책 확인이나 배포를 수행한 것은 아닙니다.
+
+
 캠프 험프리스(평택 안정리) 미군·카투사 대상 **한국 주소 대여 + 택배 보관 + 구매 대행** 서비스의 웹사이트.
 프로덕션: https://www.parcelbesideu.com/ (Vercel 배포)
 
@@ -22,9 +25,9 @@
 - **호스팅**: Vercel, `vercel.json`에 `"cleanUrls": true` (확장자 없는 URL)
 - **로컬 실행**: `npx serve` (포트 3000). 정적 서버면 무엇이든 가능
 
-## 데이터 모델 — `message_templates` 단일 테이블
+## 주소록·템플릿 데이터 모델 — `message_templates`
 
-템플릿·FAQ·안내멘트·주소록이 전부 이 한 테이블에 저장된다.
+응답 템플릿·안내멘트·주소록은 이 테이블을 사용한다. 공개 FAQ·영업시간·추천 상점은 `site_settings`, 방문 통계는 `site_visits`, 지출·정기결제는 별도 테이블을 사용한다.
 
 - `id` (PK) / `sheet_name` (탭 구분: `'주소'`, `'안내멘트'`, `'FAQ'` 등) / `category` (건물·그룹명 또는 소분류) / `title` (고객 이름 또는 템플릿 제목) / `content` (본문 또는 JSON 문자열) / `sort_order` (드래그 정렬 순서) / `created_at`
 

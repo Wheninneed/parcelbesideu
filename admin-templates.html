@@ -369,6 +369,7 @@
 
     let db = null;
     let templates = [];
+    let pendingSheets = new Set(); // Empty sheets are local until their first saved row.
     let activeSheet = 'Sheet1';
     let isEditMode = false;
     let editingRowId = null; // ID of the template row currently being inline-edited
@@ -454,10 +455,14 @@
       }
     }
 
+    function getSheetNames() {
+      return [...new Set([...templates.map(t => t.sheet_name), ...pendingSheets])];
+    }
+
     // Render sheet tabs
     function renderTabs() {
-      // Get unique sheet names
-      let sheetNames = [...new Set(templates.map(t => t.sheet_name))];
+      // Include new sheets that do not have any saved rows yet.
+      let sheetNames = getSheetNames();
       
       // If empty, default to Sheet1
       if (sheetNames.length === 0) {
@@ -475,10 +480,15 @@
       sheetNames.forEach(name => {
         const tabEl = document.createElement('div');
         tabEl.className = `sheet-tab ${name === activeSheet ? 'active' : ''}`;
-        tabEl.innerHTML = `
-          <span onclick="switchSheet('${name}')">${name}</span>
-          <button class="delete-tab-btn" onclick="deleteSheetTab('${name}', event)">✕</button>
-        `;
+        const label = document.createElement('span');
+        label.textContent = name;
+        label.addEventListener('click', () => window.switchSheet(name));
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-tab-btn';
+        deleteButton.textContent = '✕';
+        deleteButton.addEventListener('click', event => window.deleteSheetTab(name, event));
+        tabEl.appendChild(label);
+        tabEl.appendChild(deleteButton);
         tabsList.appendChild(tabEl);
       });
 
@@ -544,8 +554,9 @@
     function parseAddressContent(content) {
       try {
         const parsed = JSON.parse(content);
-        if (parsed && typeof parsed === 'object') {
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
           return {
+            ...parsed,
             address: parsed.address || '',
             zip_code: parsed.zip_code || '',
             city: parsed.city || '',
@@ -565,6 +576,24 @@
         gate_code: '',
         comment: ''
       };
+    }
+
+    function bindCopyCells(row, values) {
+      row.querySelectorAll('.copyable-cell').forEach((cell, index) => {
+        cell.addEventListener('click', () => window.copyTemplateText(values[index] ?? ''));
+      });
+    }
+
+    function bindRowActions(row, id) {
+      const actions = {
+        'save-address': () => window.saveAddressInlineEdit(id),
+        'save-template': () => window.saveInlineEdit(id),
+        edit: () => window.startInlineEdit(id),
+        delete: () => window.deleteTemplateRow(id)
+      };
+      row.querySelectorAll('[data-row-action]').forEach(button => {
+        button.addEventListener('click', actions[button.dataset.rowAction]);
+      });
     }
 
     // Render table rows
@@ -613,7 +642,7 @@
       if (activeSheet === '주소') {
         // === RENDER ADDRESS SHETT (Grouped by Category/Building) ===
         // Grouping logic
-        let grouped = {};
+        let grouped = Object.create(null);
         let groupOrder = [];
 
         filtered.forEach(item => {
@@ -632,25 +661,33 @@
           // If group is not '개별 주소', draw a yellow grouping header row
           if (gName !== '개별 주소') {
             const groupHeaderTr = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = isEditMode ? 8 : 7;
+            cell.style.cssText = `font-weight: 800; font-size: 15px; color: #854d0e; padding: ${isEditMode ? '8px' : '10px'} 14px; background: #fef08a !important; border-bottom: 2px solid #e2e8f0;`;
+            const heading = document.createElement('div');
+            heading.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%;';
+            const label = document.createElement('span');
+            label.textContent = '🏢 ' + gName;
+            heading.appendChild(label);
             if (isEditMode) {
-              groupHeaderTr.innerHTML = `
-                <td colspan="8" style="font-weight: 800; font-size: 15px; color: #854d0e; padding: 8px 14px; background: #fef08a !important; border-bottom: 2px solid #e2e8f0;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <span>🏢 ${escapeHtml(gName)}</span>
-                    <div style="display: flex; gap: 6px;">
-                      <button class="action-btn" onclick="renameAddressGroup('${escapeJsString(gName)}')" style="padding: 2px 8px; font-size: 11px; background: white; font-weight: 600;">✏️ Rename</button>
-                      <button class="action-btn delete-row-btn" onclick="deleteAddressGroup('${escapeJsString(gName)}')" style="padding: 2px 8px; font-size: 11px; background: white; font-weight: 600;">❌ Delete Group</button>
-                    </div>
-                  </div>
-                </td>
-              `;
-            } else {
-              groupHeaderTr.innerHTML = `
-                <td colspan="7" style="font-weight: 800; font-size: 15px; color: #854d0e; padding: 10px 14px; background: #fef08a !important; border-bottom: 2px solid #e2e8f0;">
-                  🏢 ${escapeHtml(gName)}
-                </td>
-              `;
+              const controls = document.createElement('div');
+              controls.style.cssText = 'display: flex; gap: 6px;';
+              const rename = document.createElement('button');
+              rename.className = 'action-btn';
+              rename.style.cssText = 'padding: 2px 8px; font-size: 11px; background: white; font-weight: 600;';
+              rename.textContent = '✏️ Rename';
+              rename.addEventListener('click', () => window.renameAddressGroup(gName));
+              const remove = document.createElement('button');
+              remove.className = 'action-btn delete-row-btn';
+              remove.style.cssText = 'padding: 2px 8px; font-size: 11px; background: white; font-weight: 600;';
+              remove.textContent = '❌ Delete Group';
+              remove.addEventListener('click', () => window.deleteAddressGroup(gName));
+              controls.appendChild(rename);
+              controls.appendChild(remove);
+              heading.appendChild(controls);
             }
+            cell.appendChild(heading);
+            groupHeaderTr.appendChild(cell);
             tbody.appendChild(groupHeaderTr);
           }
 
@@ -686,7 +723,7 @@
                 <td><input type="text" class="table-input" id="edit-addr-gate" value="${escapeHtml(addr.gate_code)}" placeholder="공동현관" /></td>
                 <td><textarea class="table-textarea" id="edit-addr-comment" placeholder="비고(코멘트)">${escapeHtml(addr.comment)}</textarea></td>
                 <td class="actions-cell">
-                  <button class="action-btn" onclick="saveAddressInlineEdit(${item.id})" style="background: #10b981; color: white;">Save</button>
+                  <button class="action-btn" data-row-action="save-address" style="background: #10b981; color: white;">Save</button>
                   <button class="action-btn" onclick="cancelInlineEdit()">Cancel</button>
                 </td>
               `;
@@ -694,24 +731,26 @@
               // Address Read-only/Copy row
               const addr = parseAddressContent(item.content);
               tr.innerHTML = `
-                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(item.title)}')">${escapeHtml(item.title)}</td>
-                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.address)}')">${escapeHtml(addr.address)}</td>
-                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.zip_code)}')">${escapeHtml(addr.zip_code)}</td>
-                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.city)}')">${escapeHtml(addr.city)}</td>
-                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.phone)}')">${escapeHtml(addr.phone)}</td>
-                <td class="copyable-cell" onclick="copyTemplateText('${escapeJsString(addr.gate_code)}')">${escapeHtml(addr.gate_code)}</td>
+                <td class="copyable-cell">${escapeHtml(item.title)}</td>
+                <td class="copyable-cell">${escapeHtml(addr.address)}</td>
+                <td class="copyable-cell">${escapeHtml(addr.zip_code)}</td>
+                <td class="copyable-cell">${escapeHtml(addr.city)}</td>
+                <td class="copyable-cell">${escapeHtml(addr.phone)}</td>
+                <td class="copyable-cell">${escapeHtml(addr.gate_code)}</td>
                 <td>
                   <div class="expandable-comment" onclick="toggleCommentExpand(this)">${escapeHtml(addr.comment).replace(/\n/g, '<br>')}</div>
                 </td>
                 ${isEditMode ? `
                   <td class="actions-cell">
                     <span style="font-size:16px; color:#94a3b8; cursor:grab; padding: 4px; user-select:none; margin-right: 4px;">☰</span>
-                    <button class="action-btn edit-row-btn" onclick="startInlineEdit(${item.id})">✏️</button>
-                    <button class="action-btn delete-row-btn" onclick="deleteTemplateRow(${item.id})">❌</button>
+                    <button class="action-btn edit-row-btn" data-row-action="edit">✏️</button>
+                    <button class="action-btn delete-row-btn" data-row-action="delete">❌</button>
                   </td>
                 ` : ''}
               `;
+              bindCopyCells(tr, [item.title, addr.address, addr.zip_code, addr.city, addr.phone, addr.gate_code]);
             }
+            bindRowActions(tr, item.id);
             tbody.appendChild(tr);
           });
         });
@@ -741,7 +780,7 @@
               <td><input type="text" class="table-input" id="edit-title" value="${escapeHtml(item.title || '')}" placeholder="예: 택배 발송" /></td>
               <td><textarea class="table-textarea" id="edit-content" placeholder="템플릿 멘트 본문">${escapeHtml(item.content || '')}</textarea></td>
               <td class="actions-cell">
-                <button class="action-btn" onclick="saveInlineEdit(${item.id})" style="background: #10b981; color: white;">Save</button>
+                <button class="action-btn" data-row-action="save-template" style="background: #10b981; color: white;">Save</button>
                 <button class="action-btn" onclick="cancelInlineEdit()">Cancel</button>
               </td>
             `;
@@ -752,16 +791,18 @@
             tr.innerHTML = `
               <td style="font-weight: 600; color: #475569;">${escapeHtml(item.category || '')}</td>
               <td style="font-weight: 500;">${escapeHtml(item.title || '')}</td>
-              <td class="copyable-cell" onclick="copyTemplateText(\`${escapeJsString(item.content)}\`)">${contentHtml}</td>
+              <td class="copyable-cell">${contentHtml}</td>
               ${isEditMode ? `
                 <td class="actions-cell">
                   <span style="font-size:16px; color:#94a3b8; cursor:grab; padding: 4px; user-select:none; margin-right: 4px;">☰</span>
-                  <button class="action-btn edit-row-btn" onclick="startInlineEdit(${item.id})">✏️</button>
-                  <button class="action-btn delete-row-btn" onclick="deleteTemplateRow(${item.id})">❌</button>
-                </td>
+                  <button class="action-btn edit-row-btn" data-row-action="edit">✏️</button>
+                  <button class="action-btn delete-row-btn" data-row-action="delete">❌</button>
+              </td>
               ` : ''}
             `;
+            bindCopyCells(tr, [item.content]);
           }
+          bindRowActions(tr, item.id);
           tbody.appendChild(tr);
         });
       }
@@ -888,8 +929,17 @@
         return;
       }
 
-      // Encode address fields to JSON string
-      const addressObj = { address, zip_code, city, phone, gate_code, comment };
+      const original = templates.find(t => t.id === id);
+      if (!original) {
+        alert("This address is no longer available. Reload the page before editing.");
+        return;
+      }
+
+      // Keep fields that are not editable here, including legacy state/metadata.
+      const addressObj = {
+        ...parseAddressContent(original.content),
+        address, zip_code, city, phone, gate_code, comment
+      };
       const content = JSON.stringify(addressObj);
 
       const client = getDb();
@@ -973,6 +1023,7 @@
 
         if (data && data.length > 0) {
           templates.push(data[0]);
+          pendingSheets.delete(data[0].sheet_name);
           editingRowId = data[0].id; // Open editor instantly
           renderTable();
         }
@@ -991,13 +1042,21 @@
       if (trimmedName === '') return;
 
       // Check duplicate
-      let sheetNames = [...new Set(templates.map(t => t.sheet_name))];
+      const sheetNames = getSheetNames();
       if (sheetNames.includes(trimmedName)) {
         alert("A sheet tab with this name already exists.");
         return;
       }
 
+      if (editingRowId !== null) {
+        if (!confirm("You are currently editing a row. Creating a tab will discard unsaved changes. Proceed?")) {
+          return;
+        }
+        editingRowId = null;
+      }
+
       // We switch immediately
+      pendingSheets.add(trimmedName);
       activeSheet = trimmedName;
       renderTabs();
       renderTable();
@@ -1025,9 +1084,10 @@
 
         // Local state update
         templates = templates.filter(t => t.sheet_name !== sheetName);
+        pendingSheets.delete(sheetName);
         
         // Choose new active tab
-        let remainingTabs = [...new Set(templates.map(t => t.sheet_name))];
+        const remainingTabs = getSheetNames();
         activeSheet = remainingTabs.length > 0 ? remainingTabs[0] : 'Sheet1';
 
         renderTabs();
@@ -1286,15 +1346,6 @@
         .replace(/'/g, "&#039;");
     }
 
-    function escapeJsString(str) {
-      if (!str) return '';
-      return str
-        .replace(/\\/g, '\\\\')
-        .replace(/`/g, '\\`')
-        .replace(/\$/g, '\\$')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r');
-    }
   </script>
 </body>
 </html>

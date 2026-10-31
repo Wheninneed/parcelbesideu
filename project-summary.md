@@ -1,5 +1,8 @@
 # 📦 Parcel Beside U — 프로젝트 요약 및 인수인계 문서 (Project Summary & Handover)
 
+> 2026-11-01 Codex 보완: 현재 작업 루트는 C:\Users\crush\.claude\workspace\parcel-beside-u 입니다. 작업·승인 기준은 AGENTS.md를 먼저 따릅니다. 방문 통계·지출 기능을 보존하며 승인된 보안 보완과 관리자 UI 수정을 병합했습니다. 변경·검증·복구·배포 제외 검토안은 SECURITY_REVIEW.md에 기록했습니다. 운영 DB 정책 확인이나 배포를 수행한 것은 아닙니다.
+
+
 이 문서는 **"Parcel Beside U"** 서비스의 비즈니스 콘셉트, 기술 아키텍처, 데이터 구조 및 지금까지 구현된 모든 작업 내역을 정리하여, 다른 개발 환경이나 저장소에서도 작업을 즉시 이어서 진행할 수 있도록 돕기 위해 작성되었습니다.
 
 ---
@@ -98,7 +101,7 @@
 ## 🚀 5. 다음 환경에서 이어서 작업하는 방법 (Handover Checklist)
 
 ### 5.1 로컬 환경 구축 및 실행
-1.  **프로젝트 복사**: 이 프로젝트가 있는 폴더(`C:\Users\crush\.gemini\antigravity\scratch\parcel-beside-u\`)를 원하는 경로로 복사합니다.
+1.  **프로젝트 복사**: 이 프로젝트가 있는 폴더(`C:\Users\crush\.claude\workspace\parcel-beside-u\`)를 원하는 경로로 복사합니다.
 2.  **로컬 웹 서버 구동**: 
     ```bash
     # Node.js가 설치된 환경에서 정적 웹 서버 실행

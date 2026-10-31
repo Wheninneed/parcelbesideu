@@ -1,5 +1,8 @@
 # 🤖 CLAUDE HANDOVER PROMPT & CONTEXT (Parcel Beside U)
 
+> 2026-11-01 Codex 보완: 현재 작업 루트는 C:\Users\crush\.claude\workspace\parcel-beside-u 입니다. 작업·승인 기준은 AGENTS.md를 먼저 따릅니다. 방문 통계·지출 기능을 보존하며 승인된 보안 보완과 관리자 UI 수정을 병합했습니다. 변경·검증·복구·배포 제외 검토안은 SECURITY_REVIEW.md에 기록했습니다. 운영 DB 정책 확인이나 배포를 수행한 것은 아닙니다.
+
+
 > **안내**: 이 문서는 Claude 등 다른 AI 코딩 어시스턴트 세션으로 이동하여 작업을 계속 이어갈 때, Claude에게 전할 **시스템 프롬프트 및 컨텍스트 문서**입니다. 이 파일의 내용 전체를 복사해서 Claude 프롬프트 입력창에 붙여넣으면 Claude가 이전 작업맥락과 가이드라인을 완벽히 이해하고 바로 코딩을 시작할 수 있습니다.
 
 ---
@@ -39,7 +42,7 @@ You are an expert AI Web Developer taking over the maintenance and feature devel
 * **Frontend**: HTML5, Vanilla JavaScript (ES6+ / async-await), CSS3.
   - Design Philosophy: Clean Notion/Oopy-style UI (Pretendard & Inter typography, clean cards, subtle hover states, minimal clutter).
 * **Backend / Database**: Supabase (PostgreSQL BaaS, using `@supabase/supabase-js@2` via CDN).
-  - Row Level Security (RLS) is disabled / permissive for `message_templates`.
+  - Historical RLS notes are superseded by CLAUDE.md and checked-in SQL policies; current production application has not been verified. Never weaken access based on the historical handover.
 * **Hosting**: Vercel (`vercel.json` configured with `"cleanUrls": true` for clean Extensionless URLs).
 * **Local Development**: Static HTTP server (run `npx serve` on port 3000).
 
@@ -47,7 +50,7 @@ You are an expert AI Web Developer taking over the maintenance and feature devel
 
 ## 🗄️ 3. Database Schema & Data Modeling (`message_templates`)
 
-All dynamic templates, FAQs, business hours, and address book data are stored in a single Supabase table named **`message_templates`**.
+Current code uses `site_settings` for public FAQs/business information, `message_templates` for response templates/addresses, `site_visits` for analytics, and separate expense tables. See CLAUDE.md and checked-in SQL for the current model; do not run migrations without approval.
 
 ### `message_templates` Schema:
 - `id` (PK, int/uuid): Primary key

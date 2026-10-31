@@ -70,6 +70,31 @@
       padding: 16px;
       border-radius: 6px;
     }
+    /* Dashboard shortcuts */
+    .admin-dashboard-header { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; margin-bottom:28px; }
+    .admin-dashboard-header h2 { margin:0; font-size:24px; line-height:1.35; }
+    .admin-actions { display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; }
+    .admin-actions .admin-action { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:11px 16px; border:1px solid var(--action-border); border-radius:12px; background:var(--action-bg); color:var(--action-color); font-family:inherit; font-size:14px; font-weight:600; line-height:1.4; text-decoration:none; cursor:pointer; box-shadow:0 1px 2px rgba(15,23,42,.04); transition:background-color .15s, box-shadow .15s, transform .15s; }
+    .admin-actions .admin-action:hover { background:var(--action-hover); box-shadow:0 3px 8px rgba(15,23,42,.08); transform:translateY(-1px); }
+    .admin-actions .admin-action:active { transform:translateY(0); box-shadow:none; }
+    .admin-actions .admin-action:focus-visible { outline:2px solid #3b82f6; outline-offset:3px; }
+    .admin-action-icon { flex-shrink:0; font-size:17px; line-height:1; }
+    .admin-action-label { min-width:0; }
+    .admin-action-expenses { --action-bg:#eef2ff; --action-hover:#e0e7ff; --action-color:#4338ca; --action-border:#c7d2fe; }
+    .admin-action-faq { --action-bg:#eff6ff; --action-hover:#dbeafe; --action-color:#1d4ed8; --action-border:#bfdbfe; }
+    .admin-action-templates { --action-bg:#ecfdf5; --action-hover:#d1fae5; --action-color:#047857; --action-border:#a7f3d0; }
+    .admin-action-logout { --action-bg:#f8fafc; --action-hover:#f1f5f9; --action-color:#475569; --action-border:#e2e8f0; }
+    @media (max-width:640px) {
+      .admin-dashboard-header { flex-direction:column; align-items:stretch; gap:16px; }
+      .admin-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+      .admin-actions .admin-action { padding:10px 12px; font-size:13px; }
+    }
+    @media (prefers-reduced-motion:reduce) { .admin-actions .admin-action { transition:none; } .admin-actions .admin-action:hover { transform:none; } }
+    .daily-chart-viewport { overflow-x:auto; padding:24px 0 8px; }
+    .daily-chart-inner { min-width:780px; }
+    .daily-bar { position:relative; min-width:0; }
+    .daily-bar-value { position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); color:#475569; font-size:11px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap; pointer-events:none; }
+    .daily-bar.empty .daily-bar-value { color:#64748b; }
     /* --- Visit stats --- */
     .stat-tiles {
       display: grid;
@@ -168,13 +193,13 @@
 
     <!-- Dashboard Section -->
     <div id="dashboard-section" class="admin-container hidden">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <div class="admin-dashboard-header">
         <h2>Edit Site Information</h2>
-        <div style="display: flex; gap: 12px;">
-          <a href="admin-expenses.html" class="btn" style="background: #6366f1; text-decoration: none; display: inline-flex; align-items: center;">💸 지출 관리</a>
-          <a href="admin-faq.html" class="btn" style="background: #3b82f6; text-decoration: none; display: inline-flex; align-items: center;">💬 Manage FAQs</a>
-          <a href="admin-templates.html" class="btn" style="background: #10b981; text-decoration: none; display: inline-flex; align-items: center;">📋 Manage Templates</a>
-          <button class="btn" id="logout-btn" style="background: var(--divider); color: var(--text-main);">Logout</button>
+        <div class="admin-actions" aria-label="관리자 바로가기">
+          <a href="admin-expenses.html" class="btn admin-action admin-action-expenses"><span class="admin-action-icon" aria-hidden="true">💸</span><span class="admin-action-label">지출 관리</span></a>
+          <a href="admin-faq.html" class="btn admin-action admin-action-faq"><span class="admin-action-icon" aria-hidden="true">💬</span><span class="admin-action-label">Manage FAQs</span></a>
+          <a href="admin-templates.html" class="btn admin-action admin-action-templates"><span class="admin-action-icon" aria-hidden="true">📋</span><span class="admin-action-label">Manage Templates</span></a>
+          <button type="button" class="btn admin-action admin-action-logout" id="logout-btn"><span class="admin-action-label">Logout</span></button>
         </div>
       </div>
       
@@ -191,8 +216,12 @@
               <div class="stat-tile"><div class="stat-num" id="stat-views">0</div><div class="stat-label">30일 페이지뷰</div></div>
             </div>
             <p class="stats-section-title">일별 방문자 (최근 30일)</p>
-            <div id="daily-chart" class="daily-chart"></div>
-            <div id="daily-x" class="daily-x"></div>
+            <div class="daily-chart-viewport" role="region" aria-label="최근 30일 일별 방문자 그래프. 가로로 스크롤하여 확인하세요." tabindex="0">
+              <div class="daily-chart-inner">
+                <div id="daily-chart" class="daily-chart" role="list" aria-label="일별 고유 방문자 수"></div>
+                <div id="daily-x" class="daily-x"></div>
+              </div>
+            </div>
             <div class="stats-cols">
               <div>
                 <p class="stats-section-title">페이지별 조회수 (30일)</p>
@@ -409,11 +438,16 @@
         li.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#f3f4f6; padding:8px 12px; border-radius:4px;';
         
         var span = document.createElement('span');
-        var label = '🛑 Closed on: <b>' + item.date + '</b>';
+        span.appendChild(document.createTextNode('🛑 Closed on: '));
+        var dateLabel = document.createElement('b');
+        dateLabel.textContent = item.date;
+        span.appendChild(dateLabel);
         if (item.reason) {
-          label += ' <span style="color: var(--text-gray); font-size:14px;">— ' + item.reason + '</span>';
+          var reasonLabel = document.createElement('span');
+          reasonLabel.style.cssText = 'color: var(--text-gray); font-size:14px;';
+          reasonLabel.textContent = ' — ' + item.reason;
+          span.appendChild(reasonLabel);
         }
-        span.innerHTML = label;
         
         var btn = document.createElement('button');
         btn.className = 'btn';
@@ -438,6 +472,35 @@
     // =============================================
     // RENDER: Stores Admin
     // =============================================
+    function getSafeHttpUrl(value) {
+      if (typeof value !== 'string' || /[\u0000-\u001f\u007f]/.test(value)) return '';
+      try {
+        var url = new URL(value.trim());
+        return /^https?:$/.test(url.protocol) && !url.username && !url.password ? url.href : '';
+      } catch(e) {
+        return '';
+      }
+    }
+
+    function appendStoreSummary(container, store) {
+      var name = document.createElement('strong');
+      name.textContent = store.name;
+      var category = document.createElement('span');
+      category.style.cssText = 'color:var(--text-gray);font-size:13px;';
+      category.textContent = store.category || '';
+      container.append(name, category);
+      var url = getSafeHttpUrl(store.url);
+      if (url) {
+        var link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.style.fontSize = '12px';
+        link.textContent = '🔗';
+        container.appendChild(link);
+      }
+    }
+
     function renderStoresAdmin() {
       // Categories
       var catList = document.getElementById('categories-list');
@@ -489,7 +552,7 @@
       storesData.featured.forEach(function(store, i) {
         var li = document.createElement('li');
         li.style.cssText = 'display:flex; align-items:center; gap:8px; background:#f3f4f6; padding:8px 12px; border-radius:4px; flex-wrap:wrap;';
-        li.innerHTML = '<strong>' + store.name + '</strong> <span style="color:var(--text-gray);font-size:13px;">' + (store.category || '') + '</span> <a href="' + store.url + '" target="_blank" style="font-size:12px;">🔗</a>';
+        appendStoreSummary(li, store);
         var controls = document.createElement('span');
         controls.style.cssText = 'margin-left:auto; display:flex; gap:4px;';
         if (i > 0) {
@@ -518,7 +581,7 @@
       storesData.stores.forEach(function(store, i) {
         var li = document.createElement('li');
         li.style.cssText = 'display:flex; align-items:center; gap:8px; background:#f3f4f6; padding:8px 12px; border-radius:4px; flex-wrap:wrap;';
-        li.innerHTML = '<strong>' + store.name + '</strong> <span style="color:var(--text-gray);font-size:13px;">' + (store.category || '') + '</span> <a href="' + store.url + '" target="_blank" style="font-size:12px;">🔗</a>';
+        appendStoreSummary(li, store);
         var controls = document.createElement('span');
         controls.style.cssText = 'margin-left:auto; display:flex; gap:4px;';
         if (i > 0) {
@@ -743,6 +806,7 @@
         var n = Object.keys(byDay[k].visitors).length;
         if (n > max) max = n;
       });
+      chart.parentElement.style.minWidth = Math.max(780, days.length * (max.toLocaleString().length * 7 + 10)) + 'px';
       days.forEach(function(k) {
         var n = Object.keys(byDay[k].visitors).length;
         var bar = document.createElement('div');
@@ -750,6 +814,13 @@
         bar.style.height = n === 0 ? '2px' : Math.max(4, Math.round(n / max * 100)) + '%';
         var parts = k.split('-');
         bar.title = parseInt(parts[1]) + '/' + parseInt(parts[2]) + ' · 방문자 ' + n + ' · 조회 ' + byDay[k].views;
+        bar.setAttribute('role', 'listitem');
+        bar.setAttribute('aria-label', bar.title);
+        var value = document.createElement('span');
+        value.className = 'daily-bar-value';
+        value.textContent = n.toLocaleString();
+        value.setAttribute('aria-hidden', 'true');
+        bar.appendChild(value);
         chart.appendChild(bar);
       });
       function fmtShort(k) {
@@ -950,6 +1021,10 @@
       var cat = document.getElementById('store-cat').value;
       var logo = document.getElementById('store-logo').value.trim();
       if (name && url) {
+        if (!getSafeHttpUrl(url) || (logo && !getSafeHttpUrl(logo))) {
+          alert('Please use an http:// or https:// URL for the store and logo.');
+          return;
+        }
         var obj = { name: name, url: url, desc: desc, category: cat, logo: logo || '' };
         if (editingStoreIndex >= 0) {
           var oldName = editingStoreOriginalName || storesData.stores[editingStoreIndex].name;

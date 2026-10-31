@@ -11,3 +11,8 @@ sql/
 vercel-admin-live.txt
 update-nav.js
 _*.html
+
+# Local verification and Git metadata
+.local/
+tests/
+.gitignore
